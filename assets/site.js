@@ -199,7 +199,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
     set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
     del: k => { try { localStorage.removeItem(k); } catch (e) {} }
   };
-  const DEF = { theme: 'dark', motion: reduced ? 'off' : 'full', pop: 'zoom', accent: '' };
+  const DEF = { theme: 'aero', motion: reduced ? 'off' : 'full', pop: 'zoom', accent: '' };
   const cfg = {
     theme: store.get('theme') || DEF.theme,
     motion: store.get('motion') || DEF.motion,
