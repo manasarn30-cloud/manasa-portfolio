@@ -33,9 +33,9 @@ Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 - ✅ MQTT topic/feed structure used
 - ✅ Complete ESP32 source code
 - ✅ Explanation of important code sections
-- 🟡 Photographs of the hardware setup (only stills from the demo video so far: `task2-hardware.jpg`, `task2-relay-closeup.jpg`)
+- 🟡 Photographs of the hardware setup (`task2-hardware.jpg`, `task2-relay-closeup.jpg`, `task2-bulb-on.jpg`, `task2-bulb-off.jpg`)
 - 🟡 Screenshots of the Adafruit IO dashboard (`task2-adafruit-dashboard.png`, `task2-adafruit-feed.png`, `task2-serial.png`)
-- ✅ LED/bulb control through the cloud dashboard demonstrated (video + stills)
+- ✅ LED/bulb control through the cloud dashboard demonstrated (video)
 - ✅ Working demonstration video
 - ✅ Problems encountered during MQTT/cloud setup
 - ✅ Solutions implemented
