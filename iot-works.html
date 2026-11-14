@@ -78,7 +78,22 @@
 <p style="margin-top:20px"><a class="back-link" href="task5.html">Read the full write-up →</a></p>
 </div></div></div>
 <!-- TEMPLATE FOR A NEW ENTRY: copy one entry above and edit the title, date, bullets and quote -->
-</div></div>
+</div></div><div class="doc-section"><h2>Debugging journey: the four problems in detail</h2><h3>1. LDR readings jumping between 0 and 4095 (45&nbsp;min)</h3>
+<p>First idea: add a 10&nbsp;µF capacitor as a hardware filter. It limited flexibility and was hard to tune, so I filtered in software instead. Software is cheaper, quicker to deploy and can be tuned remotely.</p><pre class="diagram">// Before (noisy)
+int ldrValue = analogRead(LDR_PIN);
+
+// After (stable): 15 samples, 8 ms apart
+int sum = 0;
+for (int i = 0; i &lt; 15; i++) { sum += analogRead(LDR_PIN); delay(8); }
+int ldrValue = sum / 15;</pre><h3>2. Relay was backwards (30&nbsp;min)</h3>
+<p>The relay module is active-LOW. Testing with safe low-voltage signals before connecting mains showed that <code>digitalWrite(26, HIGH)</code> switched the bulb <em>off</em>. Fix: name the levels so the code reads correctly.</p><pre class="diagram">#define RELAY_PIN 26
+#define RELAY_ON  LOW     // active-LOW
+#define RELAY_OFF HIGH</pre><h3>3. Voice command took about 3 seconds (1.5&nbsp;h)</h3>
+<p>Measured each stage (Google 0.5&nbsp;s, IFTTT 0.3&nbsp;s, webhook 0.2&nbsp;s, Adafruit 0.2&nbsp;s, MQTT 0.1&nbsp;s, relay 0.05&nbsp;s). Persistent connection and asynchronous requests brought it down to roughly 1.2&ndash;1.5&nbsp;s.</p>
+<h3>4. Thresholds were wrong because of the ADC (30&nbsp;min)</h3>
+<p>I assumed an Arduino-style 10-bit ADC (0&ndash;1023), but the ESP32 is 12-bit (0&ndash;4095). Half scale is 2048, not 512, so every threshold had to be re-calibrated. Always read the datasheet and validate hardware assumptions.</p></div><div class="doc-section"><h2>Open questions I would like feedback on</h2><ul><li>Could the 15-sample averaging be made more elegant (for example a moving average or exponential filter)?</li><li>Are there better ways to handle edge cases for the relay, such as switching near the threshold (hysteresis)?</li><li>What would need to change to run this with 1000+ devices?</li><li>How would the design change for devices spread across different locations?</li></ul></div><div class="doc-section"><h2>Setup guide and checklists</h2><p>The repository has a README with the setup steps, credential placeholders, useful commands and a deployment checklist, and a CHECKLIST file that maps every assignment item to the page that covers it.</p>
+<p><a class="task-link" href="https://github.com/manasarn30-cloud/manasa-portfolio/blob/main/README.md" target="_blank" rel="noopener">README →</a> <a class="task-link" href="https://github.com/manasarn30-cloud/manasa-portfolio/blob/main/CHECKLIST.md" target="_blank" rel="noopener">CHECKLIST →</a></p></div><div class="doc-section"><h2>Get in touch</h2><p>If you work on IoT or embedded systems and want to talk about the design choices, or have advice on scaling a project like this, I would like to hear from you.</p>
+<p><a class="task-link" href="index.html#contact">Contact me →</a> <a class="task-link" href="https://github.com/manasarn30-cloud/manasa-portfolio" target="_blank" rel="noopener">GitHub repository →</a></p></div>
   <div class="task-nav"><span></span><span></span></div>
 </main>
 <script src="assets/site.js" defer></script>
