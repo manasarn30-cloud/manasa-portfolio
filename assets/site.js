@@ -181,7 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Hide media sections whose images/videos are not uploaded yet
-const cleanMedia = () => document.querySelectorAll('.media-block').forEach(b => { if (!b.querySelector('figure')) b.remove(); });
+const cleanMedia = () => {
+  document.querySelectorAll('.media-block').forEach(b => { if (!b.querySelector('figure')) b.remove(); });
+  // drop sections that are left with only a heading
+  document.querySelectorAll('.doc-section').forEach(sec => { if (![...sec.children].some(c => c.tagName !== 'H2')) sec.remove(); });
+};
 document.addEventListener('error', () => setTimeout(cleanMedia, 0), true);
 window.addEventListener('load', () => setTimeout(cleanMedia, 0));
 
