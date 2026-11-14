@@ -169,12 +169,13 @@
 &lt;script src=&quot;https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
-  // Replace with the config from Firebase console &gt; Project settings &gt; Your apps
+  // databaseURL, authDomain and projectId follow from the project name; paste your apiKey (and appId)
+  // from Firebase console &gt; Project settings &gt; Your apps
   const firebaseConfig = {
     apiKey: &quot;YOUR_API_KEY&quot;,
-    authDomain: &quot;YOUR-PROJECT.firebaseapp.com&quot;,
-    databaseURL: &quot;https://YOUR-PROJECT-default-rtdb.firebaseio.com&quot;,
-    projectId: &quot;YOUR-PROJECT&quot;
+    authDomain: &quot;manasa-easports.firebaseapp.com&quot;,
+    databaseURL: &quot;https://manasa-easports-default-rtdb.asia-southeast1.firebasedatabase.app&quot;,
+    projectId: &quot;manasa-easports&quot;
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth(), db = firebase.database();
