@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task 1: ESP32 Web Server & HTML LED Control — MANASA RN</title>
+<meta name="description" content="An ESP32 that hosts its own web page and switches an LED over Wi-Fi.">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2309090b'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='800' font-size='30' text-anchor='middle' fill='%233b82f6'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<canvas id="starfield" aria-hidden="true" style="position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; pointer-events: none;"></canvas>
+<div class="bg-blobs" aria-hidden="true"><div class="bg-blob blob-1"></div><div class="bg-blob blob-2"></div><div class="bg-blob blob-3"></div></div>
+<div class="bg-pattern" aria-hidden="true"></div>
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html#home" class="logo">MANASA<span>.RN</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html#home">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#skills">Skills</a>
+      <a href="index.html#projects" class="active">Projects</a>
+      <a href="index.html#experience">Experience</a>
+      <a href="index.html#protosem">ProtoSem</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
+  </div>
+</nav>
+<main class="container doc">
+  <header class="task-hero">
+    <a class="back-link" href="index.html#projects">← All projects</a>
+    <div class="eyebrow"><span class="highlight">Task 1</span> — IoT series</div>
+    <h1>ESP32 Web Server & HTML LED Control</h1>
+    <p>An ESP32 that hosts its own web page and switches an LED over Wi-Fi.</p>
+    <div class="chip-row"><span class="chip">ESP32</span><span class="chip">HTTP</span><span class="chip">REST</span><span class="chip">GPIO</span><span class="chip">AJAX</span></div>
+  </header>
+  <div class="doc-section"><h2>Objective</h2><p>Turn an ESP32 into a small web server so that an LED can be switched on and off from any browser on the same Wi-Fi network, with no app and no cloud service.</p>
+<p>The problem it addresses: every IoT device needs some interface to be controlled. This is the simplest version, a device that hosts its own control page. It is also the foundation for the cloud tasks that follow.</p></div><div class="doc-section"><h2>Basic concept: what an ESP32 web server is</h2><p>An ESP32 is a dual-core microcontroller with built-in Wi-Fi. Using the <code>WebServer</code> library it can listen on TCP port 80, just like a normal web server, and answer HTTP requests. Each URL (a <em>route</em>) is linked to a function. For example, <code>/api/on</code> runs <code>handleOn()</code>, which sets the LED pin HIGH.</p>
+<p>The ESP32's own flash (4&nbsp;MB) is enough to store the HTML page, so the board serves both the interface <em>and</em> handles the commands.</p></div><div class="doc-section"><h2>How the ESP32 and the browser communicate over Wi-Fi</h2><ol>
+<li>The ESP32 joins the router's 2.4&nbsp;GHz network and receives an IP address through DHCP, printed on the Serial Monitor.</li>
+<li>The phone or laptop (on the same network) opens <code>http://&lt;ESP32 IP&gt;/</code>.</li>
+<li>The browser sends an HTTP <code>GET /</code> request. The ESP32 replies with the HTML page.</li>
+<li>Pressing a button makes the page's JavaScript send <code>GET /api/on</code> or <code>/api/off</code>. The ESP32 changes the pin and replies with the new state.</li>
+<li>Every 500&nbsp;ms the page asks <code>/api/status</code> to keep the on-screen indicator correct.</li>
+</ol><pre class="diagram">Browser  ──GET /api/on──▶  ESP32 WebServer  ──digitalWrite(GPIO2, HIGH)──▶  LED
+Browser  ◀──&quot;ON&quot; (200 OK)──  ESP32 WebServer
+Browser  ──GET /api/status (every 500 ms)──▶  ESP32  (keeps the page in sync)</pre></div><div class="doc-section"><h2>Hardware components used</h2><div class="table-scroll"><table><thead><tr><th>Component</th><th>Details</th></tr></thead><tbody><tr><td>ESP32 DevKit (V4)</td><td>Dual-core Xtensa 32-bit, 160&nbsp;MHz, 520&nbsp;KB SRAM, 4&nbsp;MB flash, 802.11 b/g/n (2.4&nbsp;GHz only)</td></tr><tr><td>Onboard LED</td><td>Blue LED on GPIO2, active HIGH, current-limited by an on-board resistor</td></tr><tr><td>Micro-USB cable</td><td>Powers the board and uploads code. Must be a <strong>data</strong> cable, not charge-only</td></tr><tr><td>Software</td><td>Arduino IDE with ESP32 board package, <code>WiFi.h</code> and <code>WebServer.h</code> libraries, any web browser</td></tr></tbody></table></div></div><div class="doc-section"><h2>Circuit / wiring diagram and pin connections</h2><p>This task uses the LED already built into the board, so no external wiring is needed.</p><pre class="diagram">┌──────────────── ESP32 DevKit ────────────────┐
+│                                               │
+│   GPIO2 ──▶ [on-board resistor] ──▶ LED ──▶ GND   │
+│                                               │
+│   HIGH (3.3 V) = LED ON     LOW (0 V) = LED OFF   │
+└────────────────────────────────┬──────────────┘
+                                 │ micro-USB (power + upload + serial)
+                                 ▼
+                              Computer</pre><div class="table-scroll"><table><thead><tr><th>Pin</th><th>Function</th><th>Notes</th></tr></thead><tbody><tr><td>GPIO2</td><td>On-board LED output</td><td>3.3&nbsp;V logic, max about 12&nbsp;mA per pin, active HIGH</td></tr><tr><td>GND</td><td>Ground reference</td><td>All GND pins are at the same potential</td></tr><tr><td>USB</td><td>Power and programming</td><td>5&nbsp;V from the computer</td></tr></tbody></table></div><p>If you use an external LED on another pin, put a 220&nbsp;Ω resistor in series, wired from the GPIO through the LED to GND.</p></div><div class="doc-section"><h2>Complete Arduino / ESP32 source code</h2><p>The sketch connects to Wi-Fi, registers four routes (<code>/</code>, <code>/api/on</code>, <code>/api/off</code>, <code>/api/status</code>) and calls <code>server.handleClient()</code> in <code>loop()</code>.</p><details class="code-box"><summary>Show task1_web_led.ino</summary><pre class="code"><code>// Task 1 - ESP32 Web Server &amp; HTML LED Control
+// Board: ESP32 DevKit | Onboard LED on GPIO2 (active HIGH)
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+
+const char* ssid     = &quot;YOUR_WIFI_SSID&quot;;      // 2.4 GHz network only
+const char* password = &quot;YOUR_WIFI_PASSWORD&quot;;
+
+WebServer server(80);
+const int ledPin = 2;
+bool ledState = false;
+
+// ---- HTML interface served by the ESP32 ----
+const char PAGE[] PROGMEM = R&quot;rawliteral(
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;title&gt;ESP32 LED Control&lt;/title&gt;
+&lt;style&gt;
+  body{font-family:sans-serif;background:#09090b;color:#fafafa;text-align:center;padding-top:60px}
+  #bulb{width:120px;height:120px;border-radius:50%;margin:0 auto 30px;background:#3f3f46;transition:all .3s}
+  #bulb.on{background:#3b82f6;box-shadow:0 0 40px #3b82f6}
+  button{font-size:1.1rem;padding:12px 32px;margin:6px;border:0;border-radius:999px;cursor:pointer}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;h1&gt;ESP32 LED Control&lt;/h1&gt;
+&lt;div id=&quot;bulb&quot;&gt;&lt;/div&gt;
+&lt;p&gt;Status: &lt;b id=&quot;state&quot;&gt;...&lt;/b&gt;&lt;/p&gt;
+&lt;button onclick=&quot;send(&#x27;on&#x27;)&quot;&gt;Turn ON&lt;/button&gt;
+&lt;button onclick=&quot;send(&#x27;off&#x27;)&quot;&gt;Turn OFF&lt;/button&gt;
+&lt;script&gt;
+  // The page talks to the ESP32 with plain HTTP requests (fetch -&gt; /api/...)
+  async function send(cmd){ await fetch(&#x27;/api/&#x27; + cmd); refresh(); }
+  async function refresh(){
+    const s = (await (await fetch(&#x27;/api/status&#x27;)).text()).trim();
+    document.getElementById(&#x27;state&#x27;).textContent = s;
+    document.getElementById(&#x27;bulb&#x27;).className = (s === &#x27;ON&#x27;) ? &#x27;on&#x27; : &#x27;&#x27;;
+  }
+  refresh(); setInterval(refresh, 500);   // poll status every 500 ms
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+)rawliteral&quot;;
+
+void handleRoot()   { server.send_P(200, &quot;text/html&quot;, PAGE); }
+void handleOn()     { digitalWrite(ledPin, HIGH); ledState = true;  server.send(200, &quot;text/plain&quot;, &quot;ON&quot;);  Serial.println(&quot;LED turned ON&quot;); }
+void handleOff()    { digitalWrite(ledPin, LOW);  ledState = false; server.send(200, &quot;text/plain&quot;, &quot;OFF&quot;); Serial.println(&quot;LED turned OFF&quot;); }
+void handleStatus() { server.send(200, &quot;text/plain&quot;, ledState ? &quot;ON&quot; : &quot;OFF&quot;); }
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  WiFi.begin(ssid, password);
+  Serial.print(&quot;Connecting to WiFi&quot;);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print(&quot;.&quot;); }
+  Serial.println(&quot;\nWiFi connected!&quot;);
+  Serial.print(&quot;IP address: &quot;);
+  Serial.println(WiFi.localIP());
+
+  server.on(&quot;/&quot;, handleRoot);
+  server.on(&quot;/api/on&quot;, handleOn);
+  server.on(&quot;/api/off&quot;, handleOff);
+  server.on(&quot;/api/status&quot;, handleStatus);
+  server.begin();
+  Serial.println(&quot;Web server started on port 80&quot;);
+}
+
+void loop() {
+  server.handleClient();
+}
+</code></pre></details><p><a class="back-link" href="code/task1_web_led.ino">Download task1_web_led.ino →</a></p></div><div class="doc-section"><h2>HTML interface and how the webpage sends a command</h2><p>The page is stored in the sketch as a raw string and sent when the browser requests <code>/</code>. It contains a glowing indicator circle, <strong>Turn ON</strong> and <strong>Turn OFF</strong> buttons, and a status label.</p>
+<p>Each button calls the JavaScript function <code>send('on')</code> or <code>send('off')</code>, which uses <code>fetch('/api/' + cmd)</code> to send an HTTP request to the ESP32 <em>without reloading the page</em> (AJAX). The reply is read, and the indicator colour and label are updated.</p></div><div class="doc-section"><h2>Photographs, screenshots and video</h2><div class="media-block"><h3>Photographs of the physical setup</h3><div class="media-grid"><figure><img src="assets/media/task1-hardware.jpg" alt="ESP32 connected to the computer by USB, onboard LED visible" onerror="this.closest('figure').remove()"><figcaption>ESP32 connected to the computer by USB, onboard LED visible</figcaption></figure><figure><img src="assets/media/task1-led-on.jpg" alt="Onboard LED lit after pressing ON in the browser" onerror="this.closest('figure').remove()"><figcaption>Onboard LED lit after pressing ON in the browser</figcaption></figure></div></div><div class="media-block"><h3>Screenshots of the web interface</h3><div class="media-grid"><figure><img src="assets/media/task1-web-off.png" alt="Web interface with the LED OFF" onerror="this.closest('figure').remove()"><figcaption>Web interface with the LED OFF</figcaption></figure><figure><img src="assets/media/task1-web-on.png" alt="Web interface with the LED ON" onerror="this.closest('figure').remove()"><figcaption>Web interface with the LED ON</figcaption></figure><figure><img src="assets/media/task1-serial.png" alt="Serial Monitor: Wi-Fi connection, IP address and requests" onerror="this.closest('figure').remove()"><figcaption>Serial Monitor: Wi-Fi connection, IP address and requests</figcaption></figure></div></div><div class="media-block"><h3>Video: LED ON/OFF from the web page</h3><div class="media-grid"><figure><video controls preload="metadata" src="assets/media/task1-demo.mp4" onerror="this.closest('figure').remove()"></video><figcaption>Browser buttons switching the ESP32 LED</figcaption></figure></div></div></div><div class="doc-section"><h2>Problems encountered and how they were solved</h2><div class="table-scroll"><table><thead><tr><th>Problem</th><th>Cause</th><th>Solution</th></tr></thead><tbody><tr><td>Board not detected / upload fails</td><td>Charge-only USB cable has no data lines</td><td>Use a USB data cable</td></tr><tr><td>ESP32 never connects to Wi-Fi</td><td>ESP32 supports only 2.4&nbsp;GHz networks</td><td>Connect to a 2.4&nbsp;GHz SSID; re-check name and password</td></tr><tr><td>Page works but status label lags</td><td>HTTP is request/response: the ESP32 cannot push updates</td><td>Poll <code>/api/status</code> every 500&nbsp;ms</td></tr><tr><td>Cannot open the page from outside the home network</td><td>The ESP32 has a private LAN address</td><td>Out of scope here. This is the reason the next tasks use a cloud service</td></tr></tbody></table></div></div><div class="doc-section"><h2>What I learned</h2><ul>
+<li>How an HTTP server runs on a microcontroller, with routes, status codes and request/response.</li>
+<li>Controlling a GPIO pin and active-HIGH logic, plus current and voltage limits (3.3&nbsp;V, about 12&nbsp;mA).</li>
+<li>Updating a page with <code>fetch</code> instead of reloading it, which makes the interface feel responsive.</li>
+</ul>
+<div class="callout"><strong>Reflection.</strong> HTTP works well on the local network but only pulls data when asked. For real-time control from anywhere, a push-based approach is needed, which led directly to MQTT in Task 2.</div></div><div class="doc-section"><h2>Files in the repository</h2><ul><li><code>code/task1_web_led.ino</code>: complete sketch including the HTML page</li><li>This write-up: <code>task1.html</code></li></ul></div>
+  <div class="task-nav"><span></span><a class="task-link" href="task2.html">Task 2 →</a></div>
+</main>
+<script src="assets/site.js" defer></script>
+</body>
+</html>
