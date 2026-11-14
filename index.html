@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MANASA RN — ECE Portfolio</title>
+<meta name="description" content="Portfolio of Manasa RN, an Electronics & Communication Engineering student at Kumaraguru College of Technology, building embedded and cyber-physical systems.">
+<meta name="theme-color" content="#09090b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MANASA RN — ECE Portfolio">
+<meta property="og:description" content="Embedded & cyber-physical systems. Engineering things that sense, decide & act.">
+<meta property="og:url" content="https://manasarn30-cloud.github.io/manasa-portfolio/">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://manasarn30-cloud.github.io/manasa-portfolio/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2309090b'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='800' font-size='30' text-anchor='middle' fill='%233b82f6'%3EM%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -17,7 +26,7 @@
   
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --text-tertiary: #52525b;
+  --text-tertiary: #8b8b96;
   
   --accent: #3b82f6; /* Electric Blue */
   --accent-secondary: #ec4899; /* Vivid Pink */
@@ -203,10 +212,43 @@ ul { list-style: none; }
 .nav-toggle { display: none; }
 
 @media (max-width: 768px) {
-  .nav-links { display: none; }
-  /* Simple mobile adaptation */
-  .nav-toggle { display: block; background:none; border:none; color:var(--text-primary); font-size:1.5rem;}
+  .nav-toggle { display: block; background:none; border:1px solid var(--border); border-radius: 8px; color:var(--text-primary); font-size:1.25rem; padding: 6px 12px; cursor: pointer; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 80px; left: 16px; right: 16px;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .nav-links.open { display: flex; }
+  /* lighter background on small screens */
+  .bg-blob { animation: none; filter: blur(60px); opacity: 0.3; }
 }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.contact-email { display:block; font-family:'JetBrains Mono',monospace; font-size: clamp(0.9rem, 2.5vw, 1.25rem); color: var(--text-secondary); margin-bottom: 32px; word-break: break-all; }
+.contact-email:hover { color: var(--accent); }
+.contact-links { flex-wrap: wrap; }
+
+/* PROJECTS */
+.project-list { display: grid; gap: 32px; }
+.project-card { padding: 40px; }
+.project-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+.project-head h3 { font-size: 1.5rem; }
+.project-head span { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: var(--text-tertiary); }
+.project-card p { color: var(--text-secondary); margin-bottom: 16px; max-width: 760px; }
+.project-card h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; text-transform: uppercase; color: var(--accent-secondary); margin: 24px 0 12px; }
+.project-card ul { list-style: square; padding-left: 20px; color: var(--text-secondary); }
+.project-card li { margin-bottom: 8px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.chip { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 4px 12px; border-radius: 100px; border: 1px solid var(--border); color: var(--text-secondary); }
+.project-flow { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: var(--text-secondary); background: var(--bg-base); border-left: 2px solid var(--accent); padding: 16px 20px; margin: 20px 0; overflow-x: auto; white-space: nowrap; }
 
 /* ============================================================
    BUTTONS (Magnetic behavior added via JS)
@@ -587,25 +629,29 @@ section { padding: 120px 0; position: relative; }
 </head>
 <body>
 
-<canvas id="starfield" style="position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; pointer-events: none;"></canvas>
-<div class="bg-blobs">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+<canvas id="starfield" aria-hidden="true" style="position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; pointer-events: none;"></canvas>
+<div class="bg-blobs" aria-hidden="true">
   <div class="bg-blob blob-1"></div>
   <div class="bg-blob blob-2"></div>
   <div class="bg-blob blob-3"></div>
 </div>
-<div class="bg-pattern"></div>
+<div class="bg-pattern" aria-hidden="true"></div>
 
 <!-- ================= NAVBAR ================= -->
 <nav class="navbar">
   <div class="container nav-inner">
     <a href="#home" class="logo">MANASA<span>.RN</span></a>
-    <div class="nav-links">
+    <div class="nav-links" id="nav-links">
       <a href="#home">Home</a>
       <a href="#about">About</a>
       <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
       <a href="#experience">Experience</a>
       <a href="#protosem">ProtoSem</a>
+      <a href="#contact">Contact</a>
     </div>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
   </div>
 </nav>
 
@@ -641,7 +687,7 @@ section { padding: 120px 0; position: relative; }
       </div>
     </div>
     
-    <div class="hero-graphic reveal" style="transition-delay: 0.2s;">
+    <div class="hero-graphic reveal" aria-hidden="true" style="transition-delay: 0.2s;">
       <div class="core"></div>
     </div>
   </div>
@@ -723,11 +769,98 @@ section { padding: 120px 0; position: relative; }
   </div>
 </section>
 
+<!-- ================= PROJECTS ================= -->
+<section id="projects">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="eyebrow">03 — <span class="highlight">Projects</span></div>
+      <h2>From a blinking LED to a cloud-connected monitor.</h2>
+    </div>
+
+    <div class="project-list">
+
+      <!-- Project 1 -->
+      <div class="spotlight-card project-card reveal">
+        <div class="spotlight-content">
+          <div class="project-head"><h3>01 · Browser-Controlled LED</h3><span>ESP32 · HTTP</span></div>
+          <p>An ESP32 acting as a web server on the local network. A browser page turns the onboard LED on and off through a small REST API.</p>
+          <h4>What I built</h4>
+          <ul>
+            <li>Endpoints <code>/api/on</code>, <code>/api/off</code> and <code>/api/status</code> on the ESP32 <code>WebServer</code> library</li>
+            <li>A responsive page that polls status every 500&nbsp;ms and updates without reloading</li>
+            <li>Button response of roughly 50–100&nbsp;ms on my local network</li>
+          </ul>
+          <h4>Takeaway</h4>
+          <p>HTTP is pull-based, which works for occasional updates but not for real-time control. That led straight to the next project.</p>
+          <div class="chip-row"><span class="chip">ESP32</span><span class="chip">Arduino C++</span><span class="chip">REST</span><span class="chip">GPIO</span></div>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="spotlight-card project-card reveal">
+        <div class="spotlight-content">
+          <div class="project-head"><h3>02 · Cloud Relay Control over MQTT</h3><span>ESP32 · Adafruit IO · Relay</span></div>
+          <p>Switching a mains bulb from anywhere on the internet. A dashboard publishes to an Adafruit IO feed over MQTT, and the ESP32 subscribes and drives a 5&nbsp;V relay module.</p>
+          <h4>What I built</h4>
+          <ul>
+            <li>MQTT publish/subscribe control with a callback that parses ON/OFF commands</li>
+            <li>A relay that isolates 230&nbsp;V AC from the ESP32. Only the live wire is switched, and the relay defaults to OFF at start-up</li>
+            <li>Dashboard-to-bulb latency under about a second</li>
+          </ul>
+          <h4>What went wrong, and the fix</h4>
+          <p>The relay module is active-LOW: a LOW signal turns it on. I caught this by testing the logic at low voltage and reading the datasheet before connecting mains, then wrapped it in <code>RELAY_ON</code> / <code>RELAY_OFF</code> constants.</p>
+          <div class="chip-row"><span class="chip">MQTT</span><span class="chip">Adafruit IO</span><span class="chip">Relay</span><span class="chip">Mains isolation</span></div>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="spotlight-card project-card reveal">
+        <div class="spotlight-content">
+          <div class="project-head"><h3>03 · Google Assistant Voice Control</h3><span>IFTTT · Webhooks</span></div>
+          <p>"Hey Google, activate bulb on" now switches the relay, chaining several services together without a custom app.</p>
+          <div class="project-flow">Google Assistant → IFTTT → Webhook → Adafruit IO → MQTT → ESP32 → Relay</div>
+          <h4>What I built</h4>
+          <ul>
+            <li>Two IFTTT applets (on and off) that send a JSON POST to the Adafruit IO feed</li>
+            <li>End-to-end latency of about 2–3 seconds, which I worked down by keeping the WiFi connection persistent and making requests asynchronous</li>
+            <li>A troubleshooting guide covering IFTTT rate limiting, account mismatches and feed-name errors</li>
+          </ul>
+          <h4>Takeaway</h4>
+          <p>Latency adds up across every hop, so I broke it down per stage before optimising anything.</p>
+          <div class="chip-row"><span class="chip">IFTTT</span><span class="chip">Webhooks</span><span class="chip">Google Assistant</span><span class="chip">MQTT</span></div>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="spotlight-card project-card reveal">
+        <div class="spotlight-content">
+          <div class="project-head"><h3>04 · Smart Environment Monitor</h3><span>ESP32 · Firebase · Web dashboard</span></div>
+          <p>A system that logs temperature, humidity and light every 2 seconds, stores it in Firebase Realtime Database, and lets me control the relay manually or automatically from a web dashboard.</p>
+          <h4>Hardware and firmware</h4>
+          <ul>
+            <li>DHT11 for temperature and humidity, and an LDR module on the ESP32's 12-bit ADC (0–4095, not Arduino's 0–1023)</li>
+            <li>The raw LDR readings jumped erratically, so I average 15 samples taken 8&nbsp;ms apart in software</li>
+            <li>Automatic mode compares the filtered light level against an adjustable threshold. Manual mode follows the dashboard toggle</li>
+          </ul>
+          <h4>Cloud and dashboard</h4>
+          <ul>
+            <li>Flat database layout (<code>/sensorData</code>, <code>/appliances</code>, <code>/settings</code>) with stream listeners on the ESP32 for commands</li>
+            <li>Firebase Authentication (email/password and Google) with security rules limiting access to signed-in users</li>
+            <li>Live sensor cards, bulb toggle, mode selector, threshold slider, a table of the last 50 readings, and CSV export</li>
+          </ul>
+          <div class="chip-row"><span class="chip">DHT11</span><span class="chip">LDR</span><span class="chip">Firebase RTDB</span><span class="chip">Firebase Auth</span><span class="chip">JavaScript</span><span class="chip">Software filtering</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- ================= EXPERIENCE ================= -->
 <section id="experience">
   <div class="container">
     <div class="section-header reveal">
-      <div class="eyebrow">03 — <span class="highlight">Experience</span></div>
+      <div class="eyebrow">04 — <span class="highlight">Experience</span></div>
       <h2>Where I've applied it so far.</h2>
     </div>
     
@@ -757,7 +890,7 @@ section { padding: 120px 0; position: relative; }
 <section id="protosem">
   <div class="container">
     <div class="section-header reveal">
-      <div class="eyebrow">04 — <span class="highlight">ProtoSem Journal</span></div>
+      <div class="eyebrow">05 — <span class="highlight">ProtoSem Journal</span></div>
       <h2>A running log of what I build, learn, and reflect on.</h2>
     </div>
     
@@ -847,13 +980,15 @@ section { padding: 120px 0; position: relative; }
 <!-- ================= CONTACT / FOOTER ================= -->
 <section id="contact" class="contact-section">
   <div class="container">
-    <div class="eyebrow reveal"><span class="highlight">05</span> — Let's talk</div>
+    <div class="eyebrow reveal"><span class="highlight">06</span> — Let's talk</div>
     <a href="mailto:manasarajesweri.24ec@kct.ac.in" class="contact-heading reveal" style="display: block;">
-      HELLO@<br>MANASA.RN
+      SAY<br>HELLO.
     </a>
+    <a href="mailto:manasarajesweri.24ec@kct.ac.in" class="contact-email reveal">manasarajesweri.24ec@kct.ac.in</a>
     <div class="contact-links reveal">
       <a href="mailto:manasarajesweri.24ec@kct.ac.in">Email</a>
       <a href="https://linkedin.com/in/manasa-r-n-294183305" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/manasarn30-cloud" target="_blank" rel="noopener">GitHub</a>
     </div>
     
     <div class="footer-bottom reveal">
@@ -897,6 +1032,20 @@ document.addEventListener('DOMContentLoaded', () => {
   
   window.addEventListener('scroll', handleScroll, { passive: true });
   handleScroll();
+
+  // Mobile menu toggle
+  const toggle = document.querySelector('.nav-toggle');
+  const menu = document.getElementById('nav-links');
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open);
+    });
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      menu.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }));
+  }
 
   // 3. Spotlight Cards Hover Effect
   const cards = document.querySelectorAll('.spotlight-card');
@@ -1018,13 +1167,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       ctx.globalAlpha = 1; // reset alpha for other ops
       
-      if (!prefersReducedMotion) {
+      if (!prefersReducedMotion && !document.hidden) {
         requestAnimationFrame(draw);
       }
     };
     
     // Start drawing loop (or just draw once if reduced motion)
     draw();
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !prefersReducedMotion) requestAnimationFrame(draw);
+    });
   }
 
 });
