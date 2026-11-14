@@ -4,7 +4,20 @@ Legend: ✅ done on the site · 🟡 written part done, **needs your own photo/s
 
 Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 
-## Task 1 — ESP32 Web Server & HTML LED Control ([task1.html](task1.html))
+## Progress at a glance
+
+| Task | Done | Percentage | Still missing |
+|---|---|---|---|
+| Task 1 | 14 / 15 | **93%** | video of the LED switching from the page |
+| Task 2 | 17 / 19 | **89%** | hardware photographs, Adafruit IO dashboard screenshots |
+| Task 3 | 18 / 20 | **90%** | IFTTT screenshots, Adafruit IO feed screenshots |
+| Task 4 | 16 / 20 | **80%** | login, Firebase database and working-dashboard screenshots, workflow video |
+| Task 5 | 17 / 18 | **94%** | graph of the recorded data (optional) |
+| **All tasks** | **82 / 92** | **89%** | |
+
+How it is counted: each line of your five checklist images is one item. An item counts as done when the site covers it in writing, code, a photo or a video you sent. Screenshot, photo and video items count as done only when the file is on the site, so the percentages go up as you send files.
+
+## Task 1 — ESP32 Web Server & HTML LED Control ([task1.html](task1.html)) — 93% (14 of 15)
 - ✅ Objective of the assignment and the problem being addressed
 - ✅ Basic concept of an ESP32 web server
 - ✅ How the ESP32 and browser communicate over Wi-Fi
@@ -21,7 +34,7 @@ Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 - ✅ Brief reflection on what you learned
 - ✅ All required files/code available in the repository
 
-## Task 2 — Adafruit IO Dashboard & MQTT ([task2.html](task2.html))
+## Task 2 — Adafruit IO Dashboard & MQTT ([task2.html](task2.html)) — 89% (17 of 19)
 - ✅ Purpose of Adafruit IO in an IoT system
 - ✅ Basic concept of MQTT
 - ✅ MQTT publisher, subscriber and broker identified
@@ -42,7 +55,7 @@ Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 - ✅ Brief learning reflection
 - ✅ All required files available in the repository
 
-## Task 3 — IFTTT + Adafruit IO IoT Automation ([task3.html](task3.html))
+## Task 3 — IFTTT + Adafruit IO IoT Automation ([task3.html](task3.html)) — 90% (18 of 20)
 - ✅ Objective · ✅ Basic concept of IoT automation · ✅ What IFTTT is and why it is used
 - ✅ Trigger → Action concept · ✅ Role of Adafruit IO · ✅ Hardware and software used
 - ✅ IFTTT applet/workflow created and documented · ✅ Trigger used · ✅ Action performed
@@ -54,7 +67,7 @@ Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 - ✅ Automation tested under different conditions
 - ✅ Problems and their solutions · ✅ What you learned about cloud-based automation · ✅ Brief reflection
 
-## Task 4 — Firebase IoT Monitoring Dashboard ([task4.html](task4.html))
+## Task 4 — Firebase IoT Monitoring Dashboard ([task4.html](task4.html)) — 80% (16 of 20)
 Live dashboard: https://manasa-easports.web.app/
 - ✅ Objective · ✅ Cloud computing · ✅ IaaS, PaaS, SaaS and BaaS · ✅ Cloud platform · ✅ Database
 - ✅ Firebase Realtime Database · ✅ Cloud-based dashboard · ✅ Authentication and login · ✅ Authentication vs Authorization
@@ -62,11 +75,11 @@ Live dashboard: https://manasa-easports.web.app/
 - ✅ Database/data-flow architecture · ✅ Complete dashboard source code
 - ⬜ Screenshots of the login page — not available (live dashboard linked instead: https://manasa-easports.web.app/)
 - ⬜ Screenshots of the Firebase database — not available
-- ✅ Working dashboard — live link on the Task 4 page (screenshots not available)
+- ⬜ Screenshots of the working dashboard — not available (the live dashboard link is on the Task 4 page, but it is not a screenshot)
 - ⬜ Video demonstrating the webpage workflow — not available
 - ✅ Problems encountered and their solutions · ✅ Brief reflection
 
-## Task 5 — Firebase Logging, Automation & Data Export ([task5.html](task5.html))
+## Task 5 — Firebase Logging, Automation & Data Export ([task5.html](task5.html)) — 94% (17 of 18)
 - ✅ Objective of the complete IoT system · ✅ Final system architecture documented
 - ✅ DHT11 temperature and humidity monitoring · ✅ LDR-based light level monitoring
 - ✅ Manual bulb control · ✅ Automatic bulb control using LDR · ✅ Manual/Automatic mode · ✅ Logic for automatic lighting
