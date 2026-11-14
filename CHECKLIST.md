@@ -1,6 +1,6 @@
 # Assignment checklist coverage
 
-Legend: ✅ done on the site · 🟡 written part done, **needs your own photo/screenshot/video** · ⬜ not implemented
+Legend: ✅ done on the site · 🟡 written part done, **needs your own photo/screenshot/video** · ⬜ not available / not implemented
 
 Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 
@@ -60,10 +60,10 @@ Live dashboard: https://manasa-easports.web.app/
 - ✅ Firebase Realtime Database · ✅ Cloud-based dashboard · ✅ Authentication and login · ✅ Authentication vs Authorization
 - ✅ Firebase project setup · ✅ Firebase Authentication configuration · ✅ Realtime Database structure
 - ✅ Database/data-flow architecture · ✅ Complete dashboard source code
-- 🟡 Screenshots of the login page (`task4-login.png`)
-- 🟡 Screenshots of the Firebase database (`task4-firebase-db.png`, `task4-firebase-auth.png`, `task4-firebase-rules.png`)
-- 🟡 Screenshots of the working dashboard (`task4-dashboard.png`, `task4-dashboard-mobile.png`)
-- 🟡 Video demonstrating the webpage workflow (`task4-demo.mp4`)
+- ⬜ Screenshots of the login page — not available (live dashboard linked instead: https://manasa-easports.web.app/)
+- ⬜ Screenshots of the Firebase database — not available
+- ✅ Working dashboard — live link on the Task 4 page (screenshots not available)
+- ⬜ Video demonstrating the webpage workflow — not available
 - ✅ Problems encountered and their solutions · ✅ Brief reflection
 
 ## Task 5 — Firebase Logging, Automation & Data Export ([task5.html](task5.html))
@@ -72,10 +72,10 @@ Live dashboard: https://manasa-easports.web.app/
 - ✅ Manual bulb control · ✅ Automatic bulb control using LDR · ✅ Manual/Automatic mode · ✅ Logic for automatic lighting
 - ✅ LDR threshold/calibration method · ✅ Historical data logging in Firebase · ✅ Database structure for logs
 - ✅ Timestamped sensor readings · ✅ Temperature and humidity values · ✅ LDR/light-level values · ✅ Bulb status and mode recorded
-- ✅ Historical data displayed on the dashboard (code + description; 🟡 add a screenshot: `task5-dashboard-history.png`)
+- ✅ Historical data displayed on the dashboard (code, description and the live dashboard link; no screenshot available)
 - ⬜ Graph/chart for recorded sensor data — *not implemented* (the checklist marks it "if implemented"; the table and CSV export are in place)
-- ✅ CSV data download implemented (🟡 add `task5-csv.png`)
-- 🟡 Hardware photos and demo video (`task5-hardware.jpg`, `task5-demo.mp4`)
+- ✅ CSV data download implemented (code and description; no screenshot available)
+- ⬜ Hardware photos and demo video — not available
 
 ## Things only you can confirm
 - That `code/*.ino` matches the sketches you actually flashed. The versions here were assembled from the project documents; compile and test them on your board.
