@@ -193,6 +193,169 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
   const fine = matchMedia('(pointer: fine)').matches;
   const root = document.documentElement;
 
+  /* ---- saved settings: theme, animation level, pop-up style, accent ---- */
+  const store = {
+    get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: k => { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  const DEF = { theme: 'dark', motion: reduced ? 'off' : 'full', pop: 'zoom', accent: '' };
+  const cfg = {
+    theme: store.get('theme') || DEF.theme,
+    motion: store.get('motion') || DEF.motion,
+    pop: store.get('pop') || DEF.pop,
+    accent: store.get('accent') || DEF.accent
+  };
+  const lvl = () => root.dataset.motion || 'full';
+  const hex2rgba = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+  const applyCfg = () => {
+    root.dataset.theme = cfg.theme;
+    root.dataset.motion = cfg.motion;
+    root.dataset.pop = cfg.pop;
+    if (cfg.accent) {
+      root.style.setProperty('--accent', cfg.accent);
+      root.style.setProperty('--accent-muted', hex2rgba(cfg.accent, .22));
+    } else {
+      root.style.removeProperty('--accent');
+      root.style.removeProperty('--accent-muted');
+    }
+  };
+  applyCfg();
+
+  /* ---- toast pop-up ---- */
+  let toastEl, toastTimer;
+  const toast = msg => {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.setAttribute('role', 'status');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    requestAnimationFrame(() => toastEl.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+  };
+
+  /* ---- sparks that burst out of whatever you tap ---- */
+  const SPARKS = ['var(--accent)', 'var(--accent-secondary)', '#ffffff', '#8b5cf6', '#facc15', '#f472b6'];
+  const burst = (x, y, n = 12) => {
+    if (lvl() !== 'full') return;
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, d = 45 + Math.random() * 85;
+      const el = document.createElement('i');
+      el.className = 'spark';
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.setProperty('--dx', Math.cos(a) * d + 'px');
+      el.style.setProperty('--dy', Math.sin(a) * d + 'px');
+      el.style.setProperty('--c', SPARKS[i % SPARKS.length]);
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  };
+
+  /* ---- bubbles (visible in the Aero theme) ---- */
+  const bubbles = document.createElement('div');
+  bubbles.className = 'bubbles';
+  bubbles.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('i');
+    b.className = 'bubble';
+    b.style.setProperty('--x', (Math.random() * 96).toFixed(1) + '%');
+    b.style.setProperty('--s', (14 + Math.random() * 46).toFixed(0) + 'px');
+    b.style.setProperty('--t', (14 + Math.random() * 16).toFixed(1) + 's');
+    b.style.setProperty('--d', '-' + (Math.random() * 24).toFixed(1) + 's');
+    bubbles.appendChild(b);
+  }
+  document.body.appendChild(bubbles);
+
+  /* ---- style panel: change theme, animations, pop-up style, accent ---- */
+  const fab = document.createElement('button');
+  fab.className = 'fab';
+  fab.setAttribute('aria-label', 'Style settings');
+  fab.setAttribute('aria-expanded', 'false');
+  fab.innerHTML = '&#10022;';
+  const panel0 = document.createElement('div');
+  panel0.className = 'style-panel';
+  panel0.setAttribute('role', 'dialog');
+  panel0.setAttribute('aria-label', 'Style settings');
+  const SW = [['#0a9fe0', 'Sky'], ['#8b5cf6', 'Violet'], ['#ec4899', 'Pink'], ['#22c55e', 'Green'], ['#f59e0b', 'Orange']];
+  panel0.innerHTML = `
+    <h3>Make it yours</h3>
+    <p class="sub">Your choices are remembered on this device.</p>
+    <div class="opt"><span>Theme</span><div class="seg" data-key="theme">
+      <button data-v="dark">Dark</button><button data-v="aero">Frutiger Aero</button></div></div>
+    <div class="opt"><span>Animations</span><div class="seg" data-key="motion">
+      <button data-v="full">Full</button><button data-v="calm">Calm</button><button data-v="off">Off</button></div></div>
+    <div class="opt"><span>Pop-up style</span><div class="seg" data-key="pop">
+      <button data-v="zoom">Zoom</button><button data-v="flip">Flip</button><button data-v="bounce">Bounce</button><button data-v="slide">Slide</button></div></div>
+    <div class="opt"><span>Accent colour</span><div class="swatches">
+      <button class="swatch auto" data-c="" aria-label="Automatic accent colour"></button>
+      ${SW.map(([c, n]) => `<button class="swatch" style="--c:${c}" data-c="${c}" aria-label="${n}"></button>`).join('')}</div></div>
+    <button class="reset" type="button">Reset to default</button>`;
+  document.body.append(panel0, fab);
+
+  const syncPanel = () => {
+    panel0.querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg[g.dataset.key])));
+    panel0.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.c === cfg.accent));
+  };
+  const LABEL = { dark: 'Dark', aero: 'Frutiger Aero', full: 'Full', calm: 'Calm', off: 'Off', zoom: 'Zoom', flip: 'Flip', bounce: 'Bounce', slide: 'Slide' };
+  const setCfg = (k, v, say) => {
+    cfg[k] = v;
+    store.set(k, v);
+    applyCfg(); syncPanel();
+    if (say) toast(say);
+  };
+  panel0.addEventListener('click', e => {
+    const seg = e.target.closest('.seg button');
+    if (seg) {
+      const k = seg.parentElement.dataset.key;
+      setCfg(k, seg.dataset.v, `${{ theme: 'Theme', motion: 'Animations', pop: 'Pop-up style' }[k]}: ${LABEL[seg.dataset.v]}`);
+      const r = seg.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 8);
+      return;
+    }
+    const sw = e.target.closest('.swatch');
+    if (sw) {
+      cfg.accent = sw.dataset.c;
+      if (cfg.accent) store.set('accent', cfg.accent); else store.del('accent');
+      applyCfg(); syncPanel();
+      toast(cfg.accent ? 'Accent colour changed' : 'Accent colour: automatic');
+      const r = sw.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 8);
+      return;
+    }
+    if (e.target.closest('.reset')) {
+      ['theme', 'motion', 'pop', 'accent'].forEach(k => store.del(k));
+      Object.assign(cfg, { theme: DEF.theme, motion: DEF.motion, pop: DEF.pop, accent: DEF.accent });
+      applyCfg(); syncPanel(); toast('Back to the default style');
+    }
+  });
+  const setPanel = open => {
+    panel0.classList.toggle('open', open);
+    fab.setAttribute('aria-expanded', open);
+    if (open) { syncPanel(); }
+  };
+  fab.addEventListener('click', e => { setPanel(!panel0.classList.contains('open')); const r = fab.getBoundingClientRect(); burst(r.left + 26, r.top + 26, 8); });
+  document.addEventListener('pointerdown', e => { if (panel0.classList.contains('open') && !e.target.closest('.style-panel, .fab')) setPanel(false); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && panel0.classList.contains('open')) { setPanel(false); fab.focus(); } });
+  syncPanel();
+
+  /* ---- back-to-top button ---- */
+  const toTop = document.createElement('button');
+  toTop.className = 'to-top';
+  toTop.setAttribute('aria-label', 'Back to top');
+  toTop.innerHTML = '&#8593;';
+  document.body.appendChild(toTop);
+  toTop.addEventListener('click', e => { burst(e.clientX, e.clientY, 10); scrollTo({ top: 0, behavior: lvl() === 'off' ? 'auto' : 'smooth' }); });
+  addEventListener('scroll', () => toTop.classList.toggle('show', root.scrollTop > 700), { passive: true });
+
+  /* ---- section headings: words pop in one by one ---- */
+  document.querySelectorAll('.section-header h2').forEach(h => {
+    const words = h.textContent.trim().split(/\s+/);
+    h.setAttribute('aria-label', h.textContent.trim());
+    h.innerHTML = words.map((w, i) => `<span class="w" aria-hidden="true" style="--w:${i}">${w.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`).join(' ');
+  });
+
   /* ---- page scroll progress bar ---- */
   const bar = document.createElement('div');
   bar.className = 'scroll-progress';
@@ -206,7 +369,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
   onScroll();
 
   /* ---- soft glow that follows the cursor (mouse only) ---- */
-  if (fine && !reduced) {
+  if (fine) {
     const glow = document.createElement('div');
     glow.className = 'cursor-glow';
     glow.setAttribute('aria-hidden', 'true');
@@ -218,21 +381,22 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
     document.addEventListener('pointerleave', () => glow.classList.remove('on'));
   }
 
-  /* ---- ripple on press (mouse and touch) ---- */
-  if (!reduced) {
-    document.addEventListener('pointerdown', e => {
-      const host = e.target.closest('.btn, .task-link, .proj-card, .nav-links a, .skill-tag, .modal-foot a, .modal-foot button');
-      if (!host) return;
-      host.classList.add('ripple-host');
-      const r = host.getBoundingClientRect();
-      const dot = document.createElement('span');
-      dot.className = 'ripple';
-      dot.style.left = (e.clientX - r.left) + 'px';
-      dot.style.top = (e.clientY - r.top) + 'px';
-      host.appendChild(dot);
-      dot.addEventListener('animationend', () => dot.remove());
-    });
-  }
+  /* ---- ripple + sparks on press (mouse and touch) ---- */
+  document.addEventListener('pointerdown', e => {
+    if (lvl() === 'off') return;
+    const host = e.target.closest('.btn, .task-link, .proj-card, .nav-links a, .skill-tag, .chip, .hero-graphic, .modal-foot a, .modal-foot button, .modal-btn');
+    if (!host) return;
+    if (host.matches('.btn, .proj-card, .skill-tag, .chip, .hero-graphic, .task-link')) burst(e.clientX, e.clientY, host.matches('.proj-card') ? 16 : 9);
+    if (host.matches('.hero-graphic')) return;
+    host.classList.add('ripple-host');
+    const r = host.getBoundingClientRect();
+    const dot = document.createElement('span');
+    dot.className = 'ripple';
+    dot.style.left = (e.clientX - r.left) + 'px';
+    dot.style.top = (e.clientY - r.top) + 'px';
+    host.appendChild(dot);
+    dot.addEventListener('animationend', () => dot.remove());
+  });
 
   /* ---- orbiting dots in the hero ---- */
   const heroGraphic = document.querySelector('.hero-graphic');
@@ -243,10 +407,10 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
   });
 
   /* ---- 3D tilt that follows the pointer (mouse only) ---- */
-  if (fine && !reduced) {
+  if (fine) {
     document.querySelectorAll('.proj-card, .bento-item').forEach(c => {
       c.addEventListener('pointermove', e => {
-        if (c.classList.contains('pop-init') || c.classList.contains('pop-in')) return;
+        if (lvl() !== 'full' || c.classList.contains('pop-init') || c.classList.contains('pop-in')) return;
         const r = c.getBoundingClientRect();
         const x = (e.clientX - r.left) / r.width - 0.5;
         const y = (e.clientY - r.top) / r.height - 0.5;
@@ -258,9 +422,11 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
 
   /* ---- Projects: cards pop up one after another ---- */
   const cards = [...document.querySelectorAll('a.proj-card[href^="task"]')];
-  if (cards.length && !reduced && 'IntersectionObserver' in window) {
+  const FX = ['pop', 'flip', 'spin', 'drop', 'slide'];
+  if (cards.length && lvl() !== 'off' && 'IntersectionObserver' in window) {
     cards.forEach((c, i) => {
       c.classList.remove('reveal');
+      c.dataset.fx = FX[i % FX.length];
       c.style.setProperty('--i', i);
       c.classList.add('pop-init');
     });
@@ -367,9 +533,11 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
     body.innerHTML = '<div class="modal-loading">Loading assignment…</div>';
     scroller.scrollTop = 0;
     // pop-up grows out of the card that was clicked
-    if (!wasOpen && !reduced) {
-      const r = t.card.getBoundingClientRect();
-      panel.style.transformOrigin = `${r.left + r.width / 2}px ${r.top + r.height / 2}px`;
+    if (!wasOpen) {
+      if (cfg.pop === 'zoom' && lvl() !== 'off') {
+        const r = t.card.getBoundingClientRect();
+        panel.style.transformOrigin = `${r.left + r.width / 2}px ${r.top + r.height / 2}px`;
+      } else panel.style.transformOrigin = '';
     }
     modal.classList.add('open');
     root.classList.add('modal-open');
@@ -427,4 +595,9 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
   };
   addEventListener('popstate', fromHash);
   fromHash();
+
+  // one-time hint
+  if (!store.get('hint')) setTimeout(() => {
+    if (cards.length && !modal) { toast('Tip: tap an assignment card to pop it open \u2726'); store.set('hint', '1'); }
+  }, 3500);
 })();
