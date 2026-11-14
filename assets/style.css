@@ -651,3 +651,5 @@ details.code-box pre.code { margin-top:0; border-top-left-radius:0; border-top-r
 .proj-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
 
 .task-hero .back-link { display:block; }
+.media-grid img { max-height: 480px; object-fit: contain; background: var(--bg-base); }
+.media-grid video { max-height: 480px; background: #000; }

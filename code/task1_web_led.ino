@@ -15,25 +15,22 @@ const char PAGE[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ESP32 LED Control</title>
+<title>ESP32 LED</title>
 <style>
-  body{font-family:sans-serif;background:#09090b;color:#fafafa;text-align:center;padding-top:60px}
-  #bulb{width:120px;height:120px;border-radius:50%;margin:0 auto 30px;background:#3f3f46;transition:all .3s}
-  #bulb.on{background:#3b82f6;box-shadow:0 0 40px #3b82f6}
-  button{font-size:1.1rem;padding:12px 32px;margin:6px;border:0;border-radius:999px;cursor:pointer}
+  body{font-family:Arial;text-align:center;margin-top:60px;background:#f2f2f2}
+  button{width:120px;height:50px;font-size:20px;margin:10px;border:none;border-radius:6px;color:#fff;cursor:pointer}
+  .on{background:#28a745} .off{background:#dc3545}
 </style></head><body>
-<h1>ESP32 LED Control</h1>
-<div id="bulb"></div>
-<p>Status: <b id="state">...</b></p>
-<button onclick="send('on')">Turn ON</button>
-<button onclick="send('off')">Turn OFF</button>
+<h1>ESP32 HTTP Web Server</h1>
+<h2>LED Status: <span id="state">...</span></h2>
+<button class="on"  onclick="send('on')">ON</button>
+<button class="off" onclick="send('off')">OFF</button>
 <script>
   // The page talks to the ESP32 with plain HTTP requests (fetch -> /api/...)
   async function send(cmd){ await fetch('/api/' + cmd); refresh(); }
   async function refresh(){
     const s = (await (await fetch('/api/status')).text()).trim();
     document.getElementById('state').textContent = s;
-    document.getElementById('bulb').className = (s === 'ON') ? 'on' : '';
   }
   refresh(); setInterval(refresh, 500);   // poll status every 500 ms
 </script></body></html>

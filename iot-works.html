@@ -23,7 +23,6 @@
       <a href="index.html#about">About</a>
       <a href="index.html#skills">Skills</a>
       <a href="index.html#projects">Projects</a>
-      <a href="iot-works.html" class="active">IoT Works</a>
       <a href="index.html#experience">Experience</a>
       <a href="index.html#protosem">ProtoSem</a>
       <a href="index.html#contact">Contact</a>
@@ -43,7 +42,7 @@
 <p>The four biggest problems across the series and how long each took.</p><div class="table-scroll"><table><thead><tr><th>Problem</th><th>Time</th><th>Fix</th></tr></thead><tbody><tr><td>LDR readings jumping between 0 and 4095</td><td>45&nbsp;min</td><td>15-sample averaging with 8&nbsp;ms delays</td></tr><tr><td>Relay switching backwards</td><td>30&nbsp;min</td><td>Active-LOW logic, tested before mains</td></tr><tr><td>Slow voice-control response</td><td>1.5&nbsp;h</td><td>Persistent connection, asynchronous requests</td></tr><tr><td>Wrong thresholds (ADC resolution)</td><td>30&nbsp;min</td><td>Re-calibrated for the 12-bit ADC</td></tr><tr><td><strong>Total</strong></td><td><strong>about 3.5&nbsp;h</strong></td><td></td></tr></tbody></table></div></div>
 <div class="doc-section" style="max-width:none"><h2>Log entries</h2>
 <div class="protosem-list"><div class="spotlight-card protosem-card"><div class="spotlight-content">
-<div class="protosem-header"><h3>Entry 1: ESP32 Web Server &amp; LED Control</h3><span>Sept 2026</span></div>
+<div class="protosem-header"><h3>Entry 1: ESP32 Web Server &amp; LED Control</h3><span>10 Sept 2026</span></div>
 <div class="protosem-content"><p>Started with the fundamentals: Wi-Fi, HTTP and GPIO. Turned an ESP32 into a web server that controls its onboard LED from a browser on the same network.</p>
 <h4>What I did</h4><ul><li>Connected the ESP32 to a 2.4&nbsp;GHz network and read its IP from the Serial Monitor</li><li>Wrote routes <code>/api/on</code>, <code>/api/off</code>, <code>/api/status</code> and a control page that calls them with <code>fetch</code></li><li>Polled the status every 500&nbsp;ms so the page always shows the real LED state</li></ul>
 <h4>Result</h4><p>Button response about 50&ndash;100&nbsp;ms and page load about 200&ndash;300&nbsp;ms on the local network.</p>
