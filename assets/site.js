@@ -292,8 +292,8 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
       <button data-v="dark">Dark</button><button data-v="aero">Frutiger Aero</button></div></div>
     <div class="opt"><span>Animations</span><div class="seg" data-key="motion">
       <button data-v="full">Full</button><button data-v="calm">Calm</button><button data-v="off">Off</button></div></div>
-    <div class="opt"><span>Pop-up style</span><div class="seg" data-key="pop">
-      <button data-v="zoom">Zoom</button><button data-v="flip">Flip</button><button data-v="bounce">Bounce</button><button data-v="slide">Slide</button></div></div>
+    <div class="opt"><span>Pop-up style</span><div class="seg wrap" data-key="pop">
+      <button data-v="zoom">Zoom</button><button data-v="flip">Flip</button><button data-v="bounce">Bounce</button><button data-v="slide">Slide</button><button data-v="swirl">Swirl</button><button data-v="glass">Glass</button></div></div>
     <div class="opt"><span>Accent colour</span><div class="swatches">
       <button class="swatch auto" data-c="" aria-label="Automatic accent colour"></button>
       ${SW.map(([c, n]) => `<button class="swatch" style="--c:${c}" data-c="${c}" aria-label="${n}"></button>`).join('')}</div></div>
@@ -304,7 +304,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
     panel0.querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg[g.dataset.key])));
     panel0.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.c === cfg.accent));
   };
-  const LABEL = { dark: 'Dark', aero: 'Frutiger Aero', full: 'Full', calm: 'Calm', off: 'Off', zoom: 'Zoom', flip: 'Flip', bounce: 'Bounce', slide: 'Slide' };
+  const LABEL = { dark: 'Dark', aero: 'Frutiger Aero', full: 'Full', calm: 'Calm', off: 'Off', zoom: 'Zoom', flip: 'Flip', bounce: 'Bounce', slide: 'Slide', swirl: 'Swirl', glass: 'Glass' };
   const setCfg = (k, v, say) => {
     cfg[k] = v;
     store.set(k, v);
@@ -414,7 +414,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
   if (fine) {
     document.querySelectorAll('.proj-card, .bento-item').forEach(c => {
       c.addEventListener('pointermove', e => {
-        if (lvl() !== 'full' || c.classList.contains('pop-init') || c.classList.contains('pop-in')) return;
+        if (lvl() !== 'full' || /pop-init|pop-in|rv-init|rv-in/.test(c.className)) return;
         const r = c.getBoundingClientRect();
         const x = (e.clientX - r.left) / r.width - 0.5;
         const y = (e.clientY - r.top) / r.height - 0.5;
@@ -464,6 +464,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
       <div class="modal-backdrop" data-close></div>
       <div class="modal-panel" tabindex="-1">
         <div class="modal-bar">
+          <i class="modal-grab"></i>
           <span class="modal-step"></span>
           <div class="modal-actions">
             <button class="modal-btn prev" aria-label="Previous assignment">&#8592;</button>
@@ -483,6 +484,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
     nextBtn = modal.querySelector('.next');
     prog = modal.querySelector('.modal-progress');
     modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
+    initSwipe();
     prevBtn.addEventListener('click', () => open(current - 1));
     nextBtn.addEventListener('click', () => open(current + 1));
     scroller.addEventListener('scroll', () => {
@@ -530,7 +532,7 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
     const wasOpen = modal.classList.contains('open');
     const t = tasks[i];
     current = i;
-    if (!wasOpen) lastFocus = document.activeElement;
+    if (!wasOpen) { lastFocus = document.activeElement; buzz(12); }
     stepEl.innerHTML = `Assignment <b>${i + 1}</b> of ${tasks.length}`;
     prevBtn.disabled = i === 0;
     nextBtn.disabled = i === tasks.length - 1;
@@ -566,6 +568,8 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
       body.appendChild(foot);
       foot.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => open(+b.dataset.go)));
       [...body.querySelectorAll('.doc-section')].slice(0, 8).forEach((s, k) => s.style.setProperty('--i', k));
+      // tables that fit the screen should not swallow sideways swipes
+      body.querySelectorAll('.table-scroll').forEach(t => { if (t.scrollWidth <= t.clientWidth + 2) t.style.touchAction = 'pan-y'; });
       setTimeout(() => { if (typeof cleanMedia === 'function') cleanMedia(); }, 800);
     } catch (err) {
       // e.g. opened from a local file: fall back to the normal page
@@ -586,8 +590,332 @@ window.addEventListener('load', () => setTimeout(cleanMedia, 0));
   cards.forEach((c, i) => c.addEventListener('click', e => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;   // allow open-in-new-tab
     e.preventDefault();
+    if (suppressClick) { suppressClick = false; return; }
     open(i);
   }));
+
+  /* =================== GESTURES =================== */
+  const buzz = ms => { if (lvl() === 'full' && navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } };
+  let lastPointerType = 'mouse';
+  addEventListener('pointerdown', e => {
+    lastPointerType = e.pointerType;
+    if (e.target.closest('.btn, .proj-card, .skill-tag, .chip, .seg button, .swatch, .fab, .to-top, .modal-btn, .proj-dots i')) buzz(8);
+  }, { passive: true });
+
+  /* ---- swipe the pop-up: left/right switches assignment, pull down closes ---- */
+  const initSwipe = () => {
+    const NO_DRAG = 'video, input, textarea, .seg, .modal-btn';
+    const scrollsSideways = el => {
+      for (let n = el; n && n !== panel; n = n.parentElement) {
+        if (n.scrollWidth > n.clientWidth + 2 && /(auto|scroll)/.test(getComputedStyle(n).overflowX)) return true;
+      }
+      return false;
+    };
+    const bd = modal.querySelector('.modal-backdrop');
+    const hints = document.createElement('div');
+    hints.className = 'swipe-hints';
+    hints.innerHTML = '<i class="swipe-hint l">&#8592;</i><i class="swipe-hint r">&#8594;</i>';
+    modal.querySelector('.modal-panel').appendChild(hints);
+    const hl = hints.querySelector('.l'), hr = hints.querySelector('.r');
+    const setHints = dx => {
+      const a = Math.min(1, Math.abs(dx) / 120);
+      hl.style.opacity = dx > 0 ? a : 0;
+      hl.style.transform = `translate(${dx > 0 ? Math.min(dx, 140) * .45 : 0}px, -50%) scale(${(.6 + a * .6).toFixed(2)})`;
+      hr.style.opacity = dx < 0 ? a : 0;
+      hr.style.transform = `translate(${dx < 0 ? Math.max(dx, -140) * .45 : 0}px, -50%) scale(${(.6 + a * .6).toFixed(2)})`;
+    };
+    let st = null;
+    const springBack = () => {
+      panel.style.transition = 'transform .55s cubic-bezier(.34, 1.7, .5, 1), opacity .3s';
+      panel.style.transform = '';
+      panel.style.opacity = '';
+      bd.style.opacity = '';
+      setHints(0);
+      setTimeout(() => { panel.style.transition = ''; panel.classList.remove('dragging'); }, 580);
+    };
+    panel.addEventListener('pointerdown', e => {
+      if (e.button > 0) return;
+      const onBar = !!e.target.closest('.modal-bar');
+      if (!onBar && (e.pointerType === 'mouse' || e.target.closest(NO_DRAG) || scrollsSideways(e.target))) return;   // mouse drags only from the top bar
+      if (e.target.closest('.modal-btn')) return;
+      st = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), axis: null, dx: 0, dy: 0, bar: onBar };
+    });
+    panel.addEventListener('pointermove', e => {
+      if (!st || e.pointerId !== st.id) return;
+      const dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (!st.axis) {
+        if (Math.hypot(dx, dy) < 9) return;
+        if (st.bar && dy > 0 && Math.abs(dy) > Math.abs(dx)) st.axis = 'y';
+        else if (Math.abs(dx) > Math.abs(dy) * 1.3) st.axis = 'x';
+        else { st = null; return; }
+        try { panel.setPointerCapture(e.pointerId); } catch (err) {}
+        panel.style.transition = 'none';
+        panel.classList.add('dragging');
+      }
+      st.dx = dx; st.dy = dy;
+      if (st.axis === 'x') {
+        const edge = (dx > 0 && current === 0) || (dx < 0 && current === tasks.length - 1);
+        const d = edge ? dx * .28 : dx;
+        panel.style.transform = `translateX(${d}px) rotate(${(d / 38).toFixed(2)}deg)`;
+        panel.style.opacity = String(1 - Math.min(.5, Math.abs(d) / 700));
+        setHints(edge ? 0 : dx);
+      } else {
+        const d = Math.max(0, dy);
+        panel.style.transform = `translateY(${d}px) scale(${(1 - Math.min(.06, d / 3000)).toFixed(3)})`;
+        bd.style.opacity = String(1 - Math.min(.8, d / 500));
+      }
+    });
+    const end = e => {
+      if (!st || (e && e.pointerId !== st.id)) return;
+      const s = st; st = null;
+      if (!s.axis) return;
+      const dt = Math.max(1, performance.now() - s.t);
+      const vx = s.dx / dt, vy = s.dy / dt;
+      if (s.axis === 'x') {
+        const dir = s.dx < 0 ? 1 : -1, target = current + dir;
+        const ok = target >= 0 && target < tasks.length && (Math.abs(s.dx) > 110 || Math.abs(vx) > .55);
+        if (!ok) { springBack(); return; }
+        buzz(18);
+        setHints(0);
+        panel.style.transition = 'transform .22s ease-in, opacity .22s';
+        panel.style.transform = `translateX(${-dir * 110}%) rotate(${-dir * 8}deg)`;
+        panel.style.opacity = '0';
+        setTimeout(() => {
+          open(target);
+          panel.style.transition = 'none';
+          panel.style.transform = `translateX(${dir * 60}%) rotate(${dir * 5}deg)`;
+          void panel.offsetWidth;
+          panel.style.transition = 'transform .55s cubic-bezier(.34, 1.4, .64, 1), opacity .3s';
+          panel.style.transform = '';
+          panel.style.opacity = '';
+          setTimeout(() => { panel.style.transition = ''; panel.classList.remove('dragging'); }, 580);
+        }, 220);
+      } else if (s.dy > 140 || vy > .6) {
+        buzz(14);
+        panel.style.transition = ''; panel.style.transform = ''; panel.style.opacity = ''; bd.style.opacity = '';
+        panel.classList.remove('dragging');
+        close();
+      } else springBack();
+    };
+    panel.addEventListener('pointerup', end);
+    panel.addEventListener('pointercancel', () => { if (st && st.axis) springBack(); st = null; });
+  };
+
+  /* ---- press and hold a card for a quick look ---- */
+  let peek, peekAt = 0, suppressClick = false;
+  const closePeek = () => { if (peek) peek.classList.remove('open'); };
+  const showPeek = async i => {
+    if (!peek) {
+      peek = document.createElement('div');
+      peek.className = 'peek';
+      peek.setAttribute('role', 'dialog');
+      peek.setAttribute('aria-label', 'Quick look');
+      peek.addEventListener('click', e => {
+        if (Date.now() - peekAt < 600) return;           // the release of the long press
+        const go = e.target.closest('[data-open]');
+        if (go) { closePeek(); open(+go.dataset.open); }
+        else if (!e.target.closest('.peek-card') || e.target.closest('[data-close-peek]')) closePeek();
+      });
+      document.body.appendChild(peek);
+    }
+    const t = tasks[i];
+    const title = t.card.querySelector('h3').textContent;
+    let goal = '', result = '';
+    try {
+      const html = await fetchTask(t.href);
+      const dom = new DOMParser().parseFromString(html, 'text/html');
+      dom.querySelectorAll('.doc-section tr').forEach(tr => {
+        const c = tr.children;
+        if (!c[1]) return;
+        const k = c[0].textContent.trim();
+        if (k === 'Goal' && !goal) goal = c[1].innerHTML;
+        if (k === 'Result' && !result) result = c[1].innerHTML;
+      });
+    } catch (err) {}
+    peek.innerHTML = `<div class="peek-card"><div class="bento-num">Task ${i + 1} &middot; quick look</div><h3>${title}</h3>` +
+      (goal ? `<p><b>Goal</b> &mdash; ${goal}</p>` : '') + (result ? `<p><b>Result</b> &mdash; ${result}</p>` : '') +
+      `<div class="peek-actions"><button type="button" data-close-peek>Close</button><button type="button" class="go-btn" data-open="${i}">Open assignment</button></div></div>`;
+    peekAt = Date.now();
+    requestAnimationFrame(() => peek.classList.add('open'));
+  };
+  cards.forEach((c, i) => {
+    let timer = 0, sx = 0, sy = 0;
+    const cancel = () => { clearTimeout(timer); timer = 0; };
+    c.addEventListener('pointerdown', e => {
+      if (e.button > 0 || lvl() === 'off') return;
+      sx = e.clientX; sy = e.clientY;
+      timer = setTimeout(() => { timer = 0; suppressClick = true; buzz(22); showPeek(i); }, 520);
+    });
+    c.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, cancel));
+    c.addEventListener('contextmenu', e => { if (lastPointerType !== 'mouse') e.preventDefault(); });
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') closePeek(); });
+
+  /* ---- skill tags pop a short explanation ---- */
+  const TIPS = {
+    'ESP32': 'Dual-core Wi-Fi and Bluetooth microcontroller used in all five IoT tasks.',
+    'Embedded C': 'Low-level C/C++ for firmware that talks directly to hardware.',
+    'STM32F103C8T6': 'ARM Cortex-M3 microcontroller, the chip on the "Blue Pill" board.',
+    'Sensor Integration': 'Reading sensors such as the DHT11 and LDR and making the data reliable.',
+    'Arduino': 'Open-source toolchain and libraries for programming microcontrollers.',
+    'MAX30102': 'Pulse-oximeter and heart-rate sensor module that talks over I2C.',
+    'PID Control': 'Feedback control that corrects an error with proportional, integral and derivative terms.',
+    'MQTT': 'Lightweight publish/subscribe protocol, used in Tasks 2 and 3.',
+    'IIR Filters': 'Recursive digital filters that smooth noisy signals.',
+    'Firmware Development': 'Writing, testing and debugging the code that runs on a device.',
+    'Serial / I2C': 'Two common wired links between a microcontroller, its sensors and a computer.',
+    'Wokwi': 'Online simulator for ESP32 and Arduino projects.',
+    'Circuit Design': 'Planning and wiring electronic circuits safely.',
+    'CAN Protocol': 'Robust bus for communication between controllers, for example in vehicles.',
+    'Signal Processing': 'Filtering and analysing measured signals.'
+  };
+  const tags = [...document.querySelectorAll('.skill-tag')];
+  if (tags.length) {
+    const tip = document.createElement('div');
+    tip.className = 'pop-tip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+    let tipFor = null;
+    const hideTip = () => { tip.classList.remove('show'); tipFor = null; };
+    const showTip = el => {
+      const name = el.textContent.trim();
+      if (!TIPS[name]) return;
+      tip.innerHTML = `<b>${name}</b>${TIPS[name]}`;
+      const r = el.getBoundingClientRect();
+      tip.style.left = Math.min(innerWidth - 140, Math.max(140, r.left + r.width / 2)) + 'px';
+      tip.style.top = r.top + 'px';
+      tip.classList.add('show');
+      tipFor = el;
+    };
+    tags.forEach(el => {
+      el.setAttribute('tabindex', '0');
+      el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') showTip(el); });
+      el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTip(); });
+      el.addEventListener('click', () => (tipFor === el ? hideTip() : showTip(el)));
+      el.addEventListener('focus', () => showTip(el));
+      el.addEventListener('blur', hideTip);
+    });
+    addEventListener('scroll', hideTip, { passive: true });
+    document.addEventListener('pointerdown', e => { if (!e.target.closest('.skill-tag')) hideTip(); });
+  }
+
+  /* ---- cursor ring that follows the mouse and swells on things you can press ---- */
+  if (fine) {
+    const ring = document.createElement('div');
+    ring.className = 'cursor-ring';
+    ring.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(ring);
+    let rx = -100, ry = -100, tx = -100, ty = -100, running = false;
+    const loop = () => {
+      rx += (tx - rx) * .22; ry += (ty - ry) * .22;
+      ring.style.transform = `translate(${rx.toFixed(1)}px, ${ry.toFixed(1)}px)`;
+      if (Math.abs(tx - rx) > .2 || Math.abs(ty - ry) > .2) requestAnimationFrame(loop); else running = false;
+    };
+    addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || lvl() !== 'full') { ring.classList.remove('on'); return; }
+      tx = e.clientX; ty = e.clientY;
+      ring.classList.add('on');
+      ring.classList.toggle('hover', !!e.target.closest('a, button, .proj-card, .skill-tag, summary, .swatch, .seg button'));
+      if (!running) { running = true; requestAnimationFrame(loop); }
+    }, { passive: true });
+    addEventListener('pointerdown', () => ring.classList.add('press'));
+    addEventListener('pointerup', () => ring.classList.remove('press'));
+    document.addEventListener('pointerleave', () => ring.classList.remove('on'));
+  }
+
+  /* ---- parallax from mouse position, scrolling and (on Android) phone tilt ---- */
+  let gx = 0, gy = 0, sy = 0, raf = 0;
+  const flush = () => {
+    raf = 0;
+    root.style.setProperty('--gx', gx.toFixed(3));
+    root.style.setProperty('--gy', gy.toFixed(3));
+    root.style.setProperty('--sy', sy.toFixed(0));
+  };
+  const sched = () => { if (!raf) raf = requestAnimationFrame(flush); };
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse' || lvl() !== 'full') return;
+    gx = e.clientX / innerWidth - .5; gy = e.clientY / innerHeight - .5; sched();
+  }, { passive: true });
+  addEventListener('scroll', () => { sy = root.scrollTop; sched(); }, { passive: true });
+  if ('DeviceOrientationEvent' in window && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+    addEventListener('deviceorientation', e => {
+      if (lvl() !== 'full' || e.gamma == null) return;
+      gx = Math.max(-1, Math.min(1, e.gamma / 35)) / 2;
+      gy = Math.max(-1, Math.min(1, (e.beta - 45) / 35)) / 2;
+      sched();
+    });
+  }
+
+  /* ---- navigation bar slides away on the way down and back on the way up ---- */
+  let lastY = root.scrollTop;
+  addEventListener('scroll', () => {
+    const y = root.scrollTop, nav = document.querySelector('.navbar');
+    if (!nav || root.classList.contains('modal-open')) { lastY = y; return; }
+    const menuOpen = !!document.querySelector('.nav-links.open');
+    if (y > 240 && y - lastY > 8 && !menuOpen) nav.classList.add('nav-hide');
+    else if (lastY - y > 6 || y < 240) nav.classList.remove('nav-hide');
+    lastY = y;
+  }, { passive: true });
+
+  /* ---- each block reveals in its own way as you scroll ---- */
+  const RV = ['left', 'right', 'zoom', 'blur', 'up'];
+  const rvEls = [...document.querySelectorAll('.bento-item, .exp-item, .protosem-card')];
+  if (rvEls.length && lvl() !== 'off' && 'IntersectionObserver' in window) {
+    const counts = new Map();
+    rvEls.forEach(el => {
+      const k = counts.get(el.parentElement) || 0;
+      counts.set(el.parentElement, k + 1);
+      el.classList.remove('reveal');
+      el.dataset.r = RV[k % RV.length];
+      el.style.setProperty('--ri', k);
+      el.classList.add('rv-init');
+    });
+    const rio = new IntersectionObserver(es => es.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      rio.unobserve(el);
+      el.classList.remove('rv-init');
+      el.classList.add('rv-in');
+      el.addEventListener('animationend', () => el.classList.remove('rv-in'), { once: true });
+    }), { threshold: 0.12 });
+    rvEls.forEach(el => rio.observe(el));
+  }
+
+  /* ---- project cards become a swipeable 3D carousel on phones ---- */
+  const grid = document.querySelector('.proj-grid');
+  if (grid && cards.length) {
+    const mq = matchMedia('(max-width: 700px)');
+    const dots = document.createElement('div');
+    dots.className = 'proj-dots';
+    dots.setAttribute('aria-hidden', 'true');
+    dots.innerHTML = cards.map((_, i) => `<i data-i="${i}"></i>`).join('');
+    grid.after(dots);
+    dots.addEventListener('click', e => {
+      const d = e.target.closest('i');
+      if (d) cards[+d.dataset.i].scrollIntoView({ behavior: lvl() === 'off' ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+    });
+    let tick = 0, lastBest = -1;
+    const update = () => {
+      tick = 0;
+      const gr = grid.getBoundingClientRect(), cx = gr.left + gr.width / 2;
+      let best = 0, bestD = 1e9;
+      cards.forEach((c, i) => {
+        const r = c.getBoundingClientRect();
+        const d = (r.left + r.width / 2 - cx) / r.width;
+        if (Math.abs(d) < bestD) { bestD = Math.abs(d); best = i; }
+        if (mq.matches) c.style.transform = lvl() === 'full'
+          ? `perspective(900px) rotateY(${(-d * 24).toFixed(1)}deg) scale(${(1 - Math.min(.14, Math.abs(d) * .12)).toFixed(3)})` : '';
+      });
+      [...dots.children].forEach((d, i) => d.classList.toggle('on', i === best));
+      if (mq.matches && lastBest !== -1 && best !== lastBest) buzz(6);
+      lastBest = best;
+    };
+    grid.addEventListener('scroll', () => { if (!tick) tick = requestAnimationFrame(update); }, { passive: true });
+    addEventListener('resize', update);
+    if (mq.addEventListener) mq.addEventListener('change', () => { cards.forEach(c => { if (!mq.matches) c.style.transform = ''; }); update(); });
+    update();
+  }
 
   // browser Back/Forward and deep links like index.html#task3
   const fromHash = () => {

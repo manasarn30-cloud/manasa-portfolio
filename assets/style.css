@@ -909,3 +909,124 @@ html[data-theme="aero"] .scroll-progress { background: linear-gradient(90deg, #0
 html[data-theme="aero"] .cursor-glow { background: radial-gradient(circle, rgba(255,255,255,.7), transparent 65%); }
 html[data-theme="aero"] .spark { box-shadow: 0 0 12px var(--c), 0 0 0 1px rgba(255,255,255,.8); }
 html[data-theme="aero"] .media-grid img { background: rgba(255,255,255,.5); }
+
+/* =====================================================================
+   GESTURES: swipe, carousel, press-and-hold preview, cursor ring, parallax
+   ===================================================================== */
+
+/* ---- smooth page-to-page transitions (browsers that support them) ---- */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: .28s ease-in both vtOut; }
+::view-transition-new(root) { animation: .55s cubic-bezier(.16, 1, .3, 1) both vtIn; }
+@keyframes vtOut { to { opacity: 0; transform: scale(.98); filter: blur(8px); } }
+@keyframes vtIn { from { opacity: 0; transform: translateY(26px) scale(1.01); filter: blur(10px); } }
+html[data-motion="off"]::view-transition-group(*), html[data-motion="off"]::view-transition-old(*), html[data-motion="off"]::view-transition-new(*) { animation: none !important; }
+
+/* ---- nav slides away when you scroll down, back when you scroll up ---- */
+.navbar { transition: transform .45s cubic-bezier(.16, 1, .3, 1), background .3s, backdrop-filter .3s; }
+.navbar.nav-hide { transform: translateY(-115%); }
+html[data-motion="off"] .navbar.nav-hide { transform: none; }
+
+/* ---- parallax on the hero and bubbles (mouse position, scroll or phone tilt) ---- */
+.hero-graphic { translate: calc(var(--gx, 0) * -22px) calc(var(--gy, 0) * -22px + var(--sy, 0) * -.08px); }
+.bubbles { translate: calc(var(--gx, 0) * 34px) calc(var(--gy, 0) * 34px); }
+html:not([data-motion="full"]) .hero-graphic, html:not([data-motion="full"]) .bubbles { translate: none; }
+
+/* ---- cursor ring (mouse only) ---- */
+.cursor-ring { position: fixed; top: 0; left: 0; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent); box-shadow: 0 0 0 1px rgba(255,255,255,.55), 0 0 18px var(--accent-muted); pointer-events: none; z-index: 500; opacity: 0; scale: 1; transition: opacity .25s, scale .3s cubic-bezier(.34, 1.56, .64, 1), background .25s; will-change: transform; }
+.cursor-ring.on { opacity: .9; }
+.cursor-ring.hover { scale: 1.9; background: var(--accent-muted); }
+.cursor-ring.press { scale: .7; }
+html:not([data-motion="full"]) .cursor-ring { display: none; }
+@media (hover: none) { .cursor-ring { display: none; } }
+
+/* ---- different reveal for each block as you scroll ---- */
+.rv-init { opacity: 0; }
+.rv-init[data-r="left"]  { transform: translateX(-90px) rotate(-1.5deg); }
+.rv-init[data-r="right"] { transform: translateX(90px) rotate(1.5deg); }
+.rv-init[data-r="zoom"]  { transform: scale(.78); }
+.rv-init[data-r="blur"]  { transform: translateY(24px); filter: blur(14px); }
+.rv-init[data-r="up"]    { transform: translateY(60px); }
+.rv-in { animation-duration: .95s; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); animation-fill-mode: both; animation-delay: calc(var(--ri, 0) * 80ms); }
+.rv-in[data-r="left"]  { animation-name: rvLeft; }
+.rv-in[data-r="right"] { animation-name: rvRight; }
+.rv-in[data-r="zoom"]  { animation-name: rvZoom; }
+.rv-in[data-r="blur"]  { animation-name: rvBlur; }
+.rv-in[data-r="up"]    { animation-name: rvUp; }
+@keyframes rvLeft  { from { opacity: 0; transform: translateX(-90px) rotate(-1.5deg); } to { opacity: 1; transform: none; } }
+@keyframes rvRight { from { opacity: 0; transform: translateX(90px) rotate(1.5deg); } to { opacity: 1; transform: none; } }
+@keyframes rvZoom  { from { opacity: 0; transform: scale(.78); } to { opacity: 1; transform: none; } }
+@keyframes rvBlur  { from { opacity: 0; transform: translateY(24px); filter: blur(14px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes rvUp    { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
+html[data-motion="off"] .rv-init { opacity: 1; transform: none; filter: none; }
+
+/* ---- skill tag pop-up ---- */
+.skill-tag { cursor: pointer; }
+.pop-tip { position: fixed; z-index: 450; max-width: 260px; padding: 12px 16px; border-radius: 16px; background: var(--bg-elevated); border: 1px solid var(--border-hover); box-shadow: 0 20px 44px -10px rgba(0,0,0,.5); font-size: .85rem; line-height: 1.45; color: var(--text-secondary); pointer-events: none; transform: translate(-50%, calc(-100% - 6px)) scale(.6); transform-origin: 50% 100%; opacity: 0; transition: transform .4s cubic-bezier(.34, 1.7, .5, 1), opacity .2s; }
+.pop-tip b { display: block; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; margin-bottom: 2px; }
+.pop-tip::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; margin-left: -6px; background: inherit; border-right: 1px solid var(--border-hover); border-bottom: 1px solid var(--border-hover); transform: rotate(45deg); }
+.pop-tip.show { transform: translate(-50%, calc(-100% - 12px)) scale(1); opacity: 1; }
+
+/* ---- press-and-hold quick look ---- */
+.peek { position: fixed; inset: 0; z-index: 320; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(5,5,8,.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s; }
+.peek.open { opacity: 1; visibility: visible; }
+.peek-card { width: min(380px, 100%); padding: 26px; border-radius: var(--radius-lg); background: var(--bg-surface); border: 1px solid var(--border-hover); box-shadow: 0 40px 100px -20px rgba(0,0,0,.65); transform: scale(.5) translateY(40px); opacity: 0; transition: transform .5s cubic-bezier(.34, 1.7, .5, 1), opacity .25s; }
+.peek.open .peek-card { transform: none; opacity: 1; }
+.peek-card .bento-num { margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; font-size: .8rem; color: var(--accent); }
+.peek-card h3 { font-size: 1.35rem; margin-bottom: 14px; }
+.peek-card p { color: var(--text-secondary); font-size: .92rem; margin-bottom: 10px; }
+.peek-card p b { color: var(--text-primary); }
+.peek-actions { display: flex; gap: 10px; margin-top: 18px; }
+.peek-actions button { flex: 1; font: inherit; font-weight: 600; padding: 12px 16px; border-radius: 100px; border: 1px solid var(--border-hover); background: var(--bg-elevated); color: var(--text-primary); cursor: pointer; transition: transform .2s; }
+.peek-actions button:active { transform: scale(.96); }
+.peek-actions .go-btn { background: var(--accent); color: #fff; border-color: transparent; }
+.proj-card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+/* ---- swipe in the pop-up ---- */
+.modal-panel { touch-action: pan-y; }
+.modal-bar { touch-action: none; cursor: grab; position: relative; }
+.modal-bar:active { cursor: grabbing; }
+.modal-grab { display: none; position: absolute; top: 6px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 99px; background: var(--text-tertiary); opacity: .55; }
+@media (max-width: 700px) { .modal-grab { display: block; } .modal-bar { padding-top: 20px; } }
+.swipe-hints { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.swipe-hint { position: absolute; top: 50%; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 1.4rem; color: #fff; background: var(--accent); box-shadow: 0 10px 30px var(--accent-muted); opacity: 0; will-change: transform, opacity; }
+.swipe-hint.l { left: 14px; }
+.swipe-hint.r { right: 14px; }
+.modal-panel.dragging { cursor: grabbing; }
+
+/* ---- swipeable carousel for the project cards on phones ---- */
+.proj-dots { display: none; justify-content: center; gap: 8px; margin-top: 4px; }
+.proj-dots i { width: 8px; height: 8px; border-radius: 99px; background: var(--text-tertiary); opacity: .4; transition: width .4s cubic-bezier(.34, 1.56, .64, 1), opacity .3s, background .3s; cursor: pointer; }
+.proj-dots i.on { width: 28px; opacity: 1; background: var(--accent); }
+@media (max-width: 700px) {
+  .proj-grid { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -24px; padding: 14px 24px 26px; scroll-padding: 0 24px; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+  .proj-grid::-webkit-scrollbar { display: none; }
+  .proj-card { flex: 0 0 82%; scroll-snap-align: center; }
+  .proj-dots { display: flex; }
+}
+
+/* ---- two more pop-up styles ---- */
+.seg.wrap { flex-wrap: wrap; border-radius: 20px; }
+.seg.wrap button { flex: 1 1 28%; }
+@media (min-width: 701px) {
+  html[data-pop="swirl"] .modal-panel { transform: rotate(-14deg) scale(.4); filter: blur(10px); transition: transform .65s cubic-bezier(.34, 1.5, .64, 1), opacity .35s, filter .5s; }
+  html[data-pop="glass"] .modal-panel { transform: scale(1.2); filter: blur(20px); transition: transform .6s cubic-bezier(.16, 1, .3, 1), opacity .4s, filter .6s; }
+  html[data-pop] .modal.open .modal-panel { filter: none; }
+}
+
+/* ---- Aero touches for the new pieces ---- */
+html[data-theme="aero"] .pop-tip, html[data-theme="aero"] .peek-card { background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(222,244,255,.88)); border-color: #fff; box-shadow: 0 24px 50px -12px rgba(10,100,180,.5), inset 0 1px 0 #fff; }
+html[data-theme="aero"] .peek { background: rgba(120,200,255,.4); }
+html[data-theme="aero"] .peek-actions button { background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(210,238,255,.7)); border-color: #fff; box-shadow: 0 4px 12px rgba(15,95,165,.25), inset 0 1px 0 #fff; }
+html[data-theme="aero"] .peek-actions .go-btn { background: linear-gradient(180deg, #8fdcff 0%, #25b3f2 48%, #0a8fd0 52%, #3dbdf4 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,60,110,.5); }
+html[data-theme="aero"] .swipe-hint { background: linear-gradient(180deg, #8fdcff, #0a8fd0); border: 1px solid #fff; box-shadow: 0 8px 22px rgba(10,130,210,.5), inset 0 1px 0 rgba(255,255,255,.9); }
+html[data-theme="aero"] .cursor-ring { border-color: rgba(255,255,255,.95); box-shadow: 0 0 0 1.5px var(--accent), 0 0 20px rgba(255,255,255,.8); }
+html[data-theme="aero"] .proj-dots i { background: #0b2a4a; }
+html[data-theme="aero"] .proj-dots i.on { background: linear-gradient(90deg, #25b3f2, #3fbf2e); }
+html[data-theme="aero"] .modal-grab { background: #0b2a4a; }
+
+.modal-scroll { touch-action: pan-y; }
+
+/* keep sideways reveal animations from widening the page on phones */
+html, body { overflow-x: clip; }
+section, main.doc { overflow-x: clip; }
