@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "sensorData": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "appliances": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "settings": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
+}

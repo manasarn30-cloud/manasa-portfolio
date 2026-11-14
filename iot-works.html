@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT Works — MANASA RN</title>
+<meta name="description" content="A running log of the IoT work: what I built, how long the problems took and what I learned.">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2309090b'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='800' font-size='30' text-anchor='middle' fill='%233b82f6'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<canvas id="starfield" aria-hidden="true" style="position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; pointer-events: none;"></canvas>
+<div class="bg-blobs" aria-hidden="true"><div class="bg-blob blob-1"></div><div class="bg-blob blob-2"></div><div class="bg-blob blob-3"></div></div>
+<div class="bg-pattern" aria-hidden="true"></div>
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html#home" class="logo">MANASA<span>.RN</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html#home">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#skills">Skills</a>
+      <a href="index.html#projects">Projects</a>
+      <a href="index.html#experience">Experience</a>
+      <a href="index.html#protosem">ProtoSem</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
+  </div>
+</nav>
+<main class="container doc">
+  <header class="task-hero">
+    <a class="back-link" href="index.html#projects">← All projects</a>
+    <div class="eyebrow"><span class="highlight">Log</span> — IoT series</div>
+    <h1>IoT Works</h1>
+    <p>A running log of the IoT work: what I built, how long the problems took and what I learned.</p>
+    <div class="chip-row"><span class="chip">Log</span><span class="chip">ESP32</span><span class="chip">MQTT</span><span class="chip">Firebase</span></div>
+  </header>
+  <div class="doc-section" style="border-top:0;padding-top:0"><h2>Debugging time log</h2>
+<p>The four biggest problems across the series and how long each took.</p><div class="table-scroll"><table><thead><tr><th>Problem</th><th>Time</th><th>Fix</th></tr></thead><tbody><tr><td>LDR readings jumping between 0 and 4095</td><td>45&nbsp;min</td><td>15-sample averaging with 8&nbsp;ms delays</td></tr><tr><td>Relay switching backwards</td><td>30&nbsp;min</td><td>Active-LOW logic, tested before mains</td></tr><tr><td>Slow voice-control response</td><td>1.5&nbsp;h</td><td>Persistent connection, asynchronous requests</td></tr><tr><td>Wrong thresholds (ADC resolution)</td><td>30&nbsp;min</td><td>Re-calibrated for the 12-bit ADC</td></tr><tr><td><strong>Total</strong></td><td><strong>about 3.5&nbsp;h</strong></td><td></td></tr></tbody></table></div></div>
+<div class="doc-section" style="max-width:none"><h2>Log entries</h2>
+<div class="protosem-list"><div class="spotlight-card protosem-card"><div class="spotlight-content">
+<div class="protosem-header"><h3>Entry 1: ESP32 Web Server &amp; LED Control</h3><span>10 Sept 2026</span></div>
+<div class="protosem-content"><p>Started with the fundamentals: Wi-Fi, HTTP and GPIO. Turned an ESP32 into a web server that controls its onboard LED from a browser on the same network.</p>
+<h4>What I did</h4><ul><li>Connected the ESP32 to a 2.4&nbsp;GHz network and read its IP from the Serial Monitor</li><li>Wrote routes <code>/api/on</code>, <code>/api/off</code>, <code>/api/status</code> and a control page that calls them with <code>fetch</code></li><li>Polled the status every 500&nbsp;ms so the page always shows the real LED state</li></ul>
+<h4>Result</h4><p>Button response about 50&ndash;100&nbsp;ms and page load about 200&ndash;300&nbsp;ms on the local network.</p>
+<div class="protosem-reflection">&ldquo;HTTP only answers when asked. For control from anywhere, I need a push-based approach.&rdquo;</div>
+<p style="margin-top:20px"><a class="back-link" href="task1.html">Read the full write-up →</a></p>
+</div></div></div><div class="spotlight-card protosem-card"><div class="spotlight-content">
+<div class="protosem-header"><h3>Entry 2: Cloud Relay Control over MQTT</h3><span>Sept 2026</span></div>
+<div class="protosem-content"><p>Moved from the local network to the cloud: a dashboard toggle publishes to an Adafruit IO feed, and the ESP32 subscribes and switches a relay that controls a 230&nbsp;V bulb.</p>
+<h4>What I did</h4><ul><li>Set up an Adafruit IO feed and dashboard toggle</li><li>Wired the relay so only the live wire is switched, and made the relay start in the OFF state</li><li>Found the relay is <strong>active-LOW</strong> by testing at low voltage before touching mains (about 30&nbsp;minutes)</li></ul>
+<h4>Result</h4><p>Dashboard-to-bulb latency under about one second.</p>
+<div class="protosem-reflection">&ldquo;Reading the datasheet and testing in stages is what separates a working system from a safety incident.&rdquo;</div>
+<p style="margin-top:20px"><a class="back-link" href="task2.html">Read the full write-up →</a></p>
+</div></div></div><div class="spotlight-card protosem-card"><div class="spotlight-content">
+<div class="protosem-header"><h3>Entry 3: Google Assistant Voice Control</h3><span>Sept 2026</span></div>
+<div class="protosem-content"><p>Chained Google Assistant, IFTTT, Adafruit IO and the ESP32 so that &ldquo;activate bulb on&rdquo; switches the bulb.</p>
+<h4>What I did</h4><ul><li>Created two IFTTT applets (ON and OFF) that POST to the Adafruit IO feed</li><li>Handled IFTTT rate limits and exact-phrase matching during testing</li><li>Broke down the delay per service (about 2.85&nbsp;s in total), then made the connection persistent and requests asynchronous (about 1.5&nbsp;hours)</li></ul>
+<h4>Result</h4><p>End-to-end time came down from about 2.85&nbsp;s to roughly 1.2&ndash;1.5&nbsp;s.</p>
+<div class="protosem-reflection">&ldquo;Latency adds up across every hop. I had to measure each one before I could improve any of them.&rdquo;</div>
+<p style="margin-top:20px"><a class="back-link" href="task3.html">Read the full write-up →</a></p>
+</div></div></div><div class="spotlight-card protosem-card"><div class="spotlight-content">
+<div class="protosem-header"><h3>Entry 4: Firebase Dashboard &amp; Authentication</h3><span>Sept 2026</span></div>
+<div class="protosem-content"><p>Built a secure real-time web dashboard on the Firebase Realtime Database, with email/Google login and security rules.</p>
+<h4>What I did</h4><ul><li>Designed a flat database structure after slow queries on a nested one (about 30&nbsp;minutes)</li><li>Added Firebase Authentication and rules so only signed-in users can read data or control the bulb</li><li>Built live sensor cards, a bulb toggle, mode selector, threshold slider and a history table</li></ul>
+<h4>Result</h4><p>Dashboard and ESP32 stay in sync in about 1&ndash;2&nbsp;seconds.</p>
+<div class="protosem-reflection">&ldquo;Schema design matters as much as code, and authentication alone is not enough: the rules decide what a signed-in user may do.&rdquo;</div>
+<p style="margin-top:20px"><a class="back-link" href="task4.html">Read the full write-up →</a></p>
+</div></div></div><div class="spotlight-card protosem-card"><div class="spotlight-content">
+<div class="protosem-header"><h3>Entry 5: Logging, Automation &amp; CSV Export</h3><span>Sept 2026</span></div>
+<div class="protosem-content"><p>Combined everything into one system: DHT11 and LDR monitoring, timestamped logging, manual/automatic control and data export.</p>
+<h4>What I did</h4><ul><li>Fixed erratic LDR readings (0 to 4095 jumps) with 15-sample software averaging (about 45&nbsp;minutes)</li><li>Corrected thresholds after finding the ESP32 ADC is 12-bit (0&ndash;4095), not 10-bit (about 30&nbsp;minutes)</li><li>Logged a record every 2&nbsp;seconds to Firebase and added CSV download on the dashboard</li></ul>
+<h4>Result</h4><p>DHT11 about ±0.5&nbsp;°C after averaging; LDR about ±50 counts; relay response about 10&nbsp;ms.</p>
+<div class="protosem-reflection">&ldquo;A demo that works once is different from a system that keeps working unattended. I designed for noise, safe defaults and failures.&rdquo;</div>
+<p style="margin-top:20px"><a class="back-link" href="task5.html">Read the full write-up →</a></p>
+</div></div></div>
+<!-- TEMPLATE FOR A NEW ENTRY: copy one entry above and edit the title, date, bullets and quote -->
+</div></div>
+  <div class="task-nav"><span></span><span></span></div>
+</main>
+<script src="assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task 4: Firebase IoT Monitoring Dashboard — MANASA RN</title>
+<meta name="description" content="A secure, real-time Firebase dashboard with login, live sensor cards and bulb control.">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2309090b'/%3E%3Ctext x='32' y='43' font-family='Arial' font-weight='800' font-size='30' text-anchor='middle' fill='%233b82f6'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<canvas id="starfield" aria-hidden="true" style="position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; pointer-events: none;"></canvas>
+<div class="bg-blobs" aria-hidden="true"><div class="bg-blob blob-1"></div><div class="bg-blob blob-2"></div><div class="bg-blob blob-3"></div></div>
+<div class="bg-pattern" aria-hidden="true"></div>
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html#home" class="logo">MANASA<span>.RN</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html#home">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#skills">Skills</a>
+      <a href="index.html#projects" class="active">Projects</a>
+      <a href="iot-works.html">IoT Works</a>
+      <a href="index.html#experience">Experience</a>
+      <a href="index.html#protosem">ProtoSem</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
+  </div>
+</nav>
+<main class="container doc">
+  <header class="task-hero">
+    <a class="back-link" href="index.html#projects">← All projects</a>
+    <div class="eyebrow"><span class="highlight">Task 4</span> — IoT series</div>
+    <h1>Firebase IoT Monitoring Dashboard</h1>
+    <p>A secure, real-time Firebase dashboard with login, live sensor cards and bulb control.</p>
+    <div class="chip-row"><span class="chip">Firebase RTDB</span><span class="chip">Firebase Auth</span><span class="chip">JavaScript</span><span class="chip">Cloud</span></div>
+  </header>
+  <div class="doc-section"><h2>Objective of the Firebase IoT monitoring system</h2><p>Build a secure, real-time web dashboard that shows live temperature, humidity and light readings from the ESP32, lets a signed-in user control the bulb, and stores every reading in the cloud. Task 5 builds on this with logging, automation and data export.</p></div><div class="doc-section"><h2>Basic concept of Cloud Computing</h2><p>Cloud computing means using computing resources (servers, storage, databases, software) over the internet, paid for or used as needed, instead of owning and running the hardware yourself. The provider handles maintenance, scaling and uptime.</p></div><div class="doc-section"><h2>IaaS, PaaS, SaaS and BaaS</h2><div class="table-scroll"><table><thead><tr><th>Model</th><th>What you get</th><th>Example</th></tr></thead><tbody><tr><td><strong>IaaS</strong> (Infrastructure as a Service)</td><td>Raw virtual machines, storage and networks. You manage the OS and everything above</td><td>AWS EC2, Google Compute Engine</td></tr><tr><td><strong>PaaS</strong> (Platform as a Service)</td><td>A ready platform to run your code. You manage the app, not the servers</td><td>Google App Engine, Heroku</td></tr><tr><td><strong>SaaS</strong> (Software as a Service)</td><td>Finished software used through a browser</td><td>Gmail, Google Docs</td></tr><tr><td><strong>BaaS</strong> (Backend as a Service)</td><td>Ready-made backend features (database, authentication, hosting, functions) used through an SDK</td><td><strong>Firebase</strong> (used in this project)</td></tr></tbody></table></div></div><div class="doc-section"><h2>What a Cloud Platform is</h2><p>A cloud platform is a provider&rsquo;s collection of online services that can be combined to build applications. Firebase is a platform by Google offering a database, authentication, hosting and cloud functions. Adafruit IO (Task 2) is a smaller, IoT-specific platform.</p></div><div class="doc-section"><h2>What a Database is, and the Firebase Realtime Database</h2><p>A database is an organised store of data that can be written, queried and kept safely. The <strong>Firebase Realtime Database (RTDB)</strong> is a cloud-hosted NoSQL database that stores data as one large JSON tree. Its key feature is <em>real-time sync</em>: clients keep a connection open, and when a value changes, every connected client (the ESP32 and every open dashboard) is notified within about a second, with no refreshing.</p></div><div class="doc-section"><h2>What a Cloud-Based Dashboard is</h2><p>A cloud-based dashboard is a web page that reads data from a cloud service and displays and controls it from any device with a browser. Here the dashboard listens to RTDB paths, so the cards, toggle and table update on their own when the ESP32 writes new data.</p></div><div class="doc-section"><h2>Authentication, and the purpose of a login system</h2><p><strong>Authentication</strong> answers &ldquo;<em>who are you?</em>&rdquo;. Firebase Authentication verifies identity with an email and password or a Google account and issues a secure token. The login system matters because the dashboard can switch a 230&nbsp;V appliance and shows private data. Without it, anyone who found the URL could use it.</p></div><div class="doc-section"><h2>Difference between Authentication and Authorization</h2><div class="table-scroll"><table><thead><tr><th></th><th>Authentication</th><th>Authorization</th></tr></thead><tbody><tr><td>Question</td><td>Who are you?</td><td>What are you allowed to do?</td></tr><tr><td>When</td><td>At sign-in</td><td>On every read or write</td></tr><tr><td>In Firebase</td><td>Email/password or Google sign-in</td><td>Realtime Database <strong>security rules</strong> such as <code>"auth != null"</code></td></tr><tr><td>Example here</td><td>The ESP32 and the user each sign in</td><td>Only signed-in users may read <code>/sensorData</code> or change <code>/appliances</code></td></tr></tbody></table></div></div><div class="doc-section"><h2>Firebase project setup</h2><ol><li>Open the Firebase console and create a project (Analytics optional).</li><li>Add a <strong>Web app</strong> (&lt;/&gt;) and copy the <code>firebaseConfig</code> object into the dashboard.</li><li>Create a <strong>Realtime Database</strong> and start in locked mode. Then publish the rules from <code>code/database.rules.json</code>.</li><li>Note the database URL, which is also needed by the ESP32 firmware.</li></ol></div><div class="doc-section"><h2>Firebase Authentication configuration</h2><ol><li>Authentication &rarr; Sign-in method: enable <strong>Email/Password</strong> and <strong>Google</strong>.</li><li>Authentication &rarr; Settings &rarr; Authorized domains: add the domain the dashboard is hosted on (for example <code>localhost</code> and the GitHub Pages or Firebase Hosting domain).</li><li>Create one dedicated user for the ESP32 (for example <code>device@…</code>). The firmware signs in as this user.</li><li>If it is a personal project, disable open sign-ups afterwards, since any signed-in user can control the bulb under these rules.</li></ol></div><div class="doc-section"><h2>Realtime Database structure</h2><p>The structure is deliberately flat. Deeply nested paths force larger downloads and make queries slow.</p><pre class="diagram">/
+├── sensorData/
+│   └── &lt;pushId&gt;/             one record per reading (2 s apart)
+│        ├── temperature  22.5
+│        ├── humidity     59
+│        ├── ldr          1200
+│        ├── bulbState    false
+│        ├── mode         &quot;manual&quot;
+│        └── timestamp    1726123800000   (server time, ms)
+├── appliances/
+│   └── bulbState         true | false    (manual command + current state)
+├── settings/
+│   ├── mode              &quot;manual&quot; | &quot;automatic&quot;
+│   └── ldrThreshold      0 … 4095
+└── users/&lt;uid&gt;/          email, createdAt, lastLogin</pre><details class="code-box"><summary>Show security rules (database.rules.json)</summary><pre class="code"><code>{
+  &quot;rules&quot;: {
+    &quot;sensorData&quot;: {
+      &quot;.read&quot;: &quot;auth != null&quot;,
+      &quot;.write&quot;: &quot;auth != null&quot;
+    },
+    &quot;appliances&quot;: {
+      &quot;.read&quot;: &quot;auth != null&quot;,
+      &quot;.write&quot;: &quot;auth != null&quot;
+    },
+    &quot;settings&quot;: {
+      &quot;.read&quot;: &quot;auth != null&quot;,
+      &quot;.write&quot;: &quot;auth != null&quot;
+    },
+    &quot;users&quot;: {
+      &quot;$uid&quot;: {
+        &quot;.read&quot;: &quot;$uid === auth.uid&quot;,
+        &quot;.write&quot;: &quot;$uid === auth.uid&quot;
+      }
+    }
+  }
+}
+</code></pre></details><p><a class="back-link" href="code/database.rules.json">Download database.rules.json →</a></p></div><div class="doc-section"><h2>Database / data-flow architecture</h2><pre class="diagram">            ┌──────────────┐  push reading every 2 s   ┌───────────────────────┐
+ sensors ──▶│    ESP32     │ ─────────────────────────▶│  Firebase Realtime DB │
+ DHT11, LDR │ (signed in   │ ◀───────────────────────── │  /sensorData          │
+            │  as device)  │   stream: bulbState,       │  /appliances          │
+            └──────┬───────┘   mode, ldrThreshold       │  /settings            │
+                   │ GPIO26                              └─────────┬─────────────┘
+                   ▼                                     real-time │ listeners
+                 Relay → 230 V bulb                                ▼
+                                                    ┌────────────────────────────┐
+                                                    │ Web dashboard (signed-in   │
+                                                    │ user): cards, toggle, mode,│
+                                                    │ threshold, table, CSV      │
+                                                    └────────────────────────────┘</pre></div><div class="doc-section"><h2>Complete dashboard source code</h2><p>One page contains the login screen and the dashboard. It shows the right view using <code>onAuthStateChanged</code>, so the login persists across page reloads. Replace the <code>firebaseConfig</code> placeholders with your own project&rsquo;s values.</p><details class="code-box"><summary>Show task4_dashboard.html</summary><pre class="code"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Forge Dashboard&lt;/title&gt;
+&lt;style&gt;
+  :root{--bg:#0f0f1a;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12);--a:#00d4ff;--b:#7c3aed}
+  *{box-sizing:border-box} [hidden]{display:none!important}
+  body{margin:0;background:linear-gradient(135deg,#0f0f0f,#1a1a2e);color:#fff;font-family:system-ui,sans-serif;min-height:100vh}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .val{font-size:2.3rem;font-weight:700;background:linear-gradient(135deg,var(--a),var(--b));-webkit-background-clip:text;color:transparent}
+  input,button{font:inherit;border-radius:8px;border:1px solid var(--line);padding:10px 14px;background:transparent;color:#fff}
+  input{width:100%;margin-bottom:10px} button{cursor:pointer}
+  button.primary{background:linear-gradient(135deg,var(--a),var(--b));border:0;font-weight:600}
+  .toggle{width:80px;height:40px;border-radius:20px;background:#3a3a4a;position:relative;cursor:pointer;transition:background .3s}
+  .toggle.on{background:linear-gradient(135deg,var(--a),var(--b))}
+  .toggle i{position:absolute;top:3px;left:3px;width:34px;height:34px;border-radius:50%;background:#fff;transition:left .3s}
+  .toggle.on i{left:43px}
+  .modes{display:flex;gap:10px;margin:12px 0}.modes button{flex:1}.modes button.active{border-color:var(--a);background:rgba(0,212,255,.12)}
+  table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:.9rem}
+  .scroll{overflow-x:auto} #err{color:#f87171;min-height:1.2em}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+
+  &lt;!-- LOGIN VIEW --&gt;
+  &lt;div id=&quot;loginView&quot; class=&quot;card&quot; style=&quot;max-width:420px;margin:60px auto&quot;&gt;
+    &lt;h2&gt;Sign in to Forge&lt;/h2&gt;
+    &lt;input id=&quot;email&quot; type=&quot;email&quot; placeholder=&quot;Email&quot; autocomplete=&quot;email&quot;&gt;
+    &lt;input id=&quot;password&quot; type=&quot;password&quot; placeholder=&quot;Password&quot; autocomplete=&quot;current-password&quot;&gt;
+    &lt;p id=&quot;err&quot;&gt;&lt;/p&gt;
+    &lt;button class=&quot;primary&quot; id=&quot;btnLogin&quot;&gt;Sign in&lt;/button&gt;
+    &lt;button id=&quot;btnSignup&quot;&gt;Create account&lt;/button&gt;
+    &lt;p style=&quot;text-align:center;opacity:.6&quot;&gt;or&lt;/p&gt;
+    &lt;button id=&quot;btnGoogle&quot; style=&quot;width:100%&quot;&gt;Sign in with Google&lt;/button&gt;
+  &lt;/div&gt;
+
+  &lt;!-- DASHBOARD VIEW --&gt;
+  &lt;div id=&quot;dashView&quot; hidden&gt;
+    &lt;div class=&quot;top&quot;&gt;&lt;h1&gt;Forge Dashboard&lt;/h1&gt;&lt;button id=&quot;btnLogout&quot;&gt;Sign out&lt;/button&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;grid&quot;&gt;
+      &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Temperature&lt;/h3&gt;&lt;div class=&quot;val&quot; id=&quot;tempValue&quot;&gt;--&lt;/div&gt;&lt;small id=&quot;tempStatus&quot;&gt;Loading...&lt;/small&gt;&lt;/div&gt;
+      &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Humidity&lt;/h3&gt;&lt;div class=&quot;val&quot; id=&quot;humValue&quot;&gt;--&lt;/div&gt;&lt;small id=&quot;humStatus&quot;&gt;Loading...&lt;/small&gt;&lt;/div&gt;
+      &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Light level&lt;/h3&gt;&lt;div class=&quot;val&quot; id=&quot;ldrValue&quot;&gt;--&lt;/div&gt;&lt;small id=&quot;ldrStatus&quot;&gt;Loading...&lt;/small&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;h2&gt;Bulb control&lt;/h2&gt;
+      &lt;div class=&quot;toggle&quot; id=&quot;bulbToggle&quot; role=&quot;switch&quot; aria-checked=&quot;false&quot; tabindex=&quot;0&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;/div&gt;
+      &lt;p&gt;Bulb: &lt;b id=&quot;bulbStatus&quot;&gt;--&lt;/b&gt;&lt;/p&gt;
+      &lt;div class=&quot;modes&quot;&gt;
+        &lt;button id=&quot;modeManual&quot;&gt;Manual&lt;/button&gt;
+        &lt;button id=&quot;modeAuto&quot;&gt;Automatic&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div id=&quot;thresholdBox&quot; hidden&gt;
+        &lt;p&gt;Light threshold (0-4095): &lt;b id=&quot;thresholdValue&quot;&gt;2500&lt;/b&gt;&lt;/p&gt;
+        &lt;input type=&quot;range&quot; id=&quot;threshold&quot; min=&quot;0&quot; max=&quot;4095&quot; value=&quot;2500&quot; style=&quot;padding:0&quot;&gt;
+        &lt;small&gt;Higher reading = darker room. The bulb turns ON when the reading goes above the threshold.&lt;/small&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;top&quot;&gt;&lt;h2&gt;Historical data (last 50 readings)&lt;/h2&gt;&lt;button class=&quot;primary&quot; id=&quot;btnCsv&quot;&gt;Export CSV&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;scroll&quot;&gt;&lt;table&gt;
+        &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Time&lt;/th&gt;&lt;th&gt;Temp (°C)&lt;/th&gt;&lt;th&gt;Humidity (%)&lt;/th&gt;&lt;th&gt;Light&lt;/th&gt;&lt;th&gt;Bulb&lt;/th&gt;&lt;th&gt;Mode&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+        &lt;tbody id=&quot;rows&quot;&gt;&lt;/tbody&gt;
+      &lt;/table&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  // Replace with the config from Firebase console &gt; Project settings &gt; Your apps
+  const firebaseConfig = {
+    apiKey: &quot;YOUR_API_KEY&quot;,
+    authDomain: &quot;YOUR-PROJECT.firebaseapp.com&quot;,
+    databaseURL: &quot;https://YOUR-PROJECT-default-rtdb.firebaseio.com&quot;,
+    projectId: &quot;YOUR-PROJECT&quot;
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth(), db = firebase.database();
+  const $ = id =&gt; document.getElementById(id);
+
+  let mode = &quot;manual&quot;, bulbOn = false, history = [], started = false;
+
+  /* ---------- Authentication ---------- */
+  const showErr = e =&gt; $(&quot;err&quot;).textContent = e.message;
+  $(&quot;btnLogin&quot;).onclick  = () =&gt; auth.signInWithEmailAndPassword($(&quot;email&quot;).value, $(&quot;password&quot;).value).catch(showErr);
+  $(&quot;btnSignup&quot;).onclick = () =&gt; auth.createUserWithEmailAndPassword($(&quot;email&quot;).value, $(&quot;password&quot;).value).catch(showErr);
+  $(&quot;btnGoogle&quot;).onclick = () =&gt; auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(showErr);
+  $(&quot;btnLogout&quot;).onclick = () =&gt; auth.signOut();
+
+  // Session persists across reloads; this decides which view to show
+  auth.onAuthStateChanged(user =&gt; {
+    $(&quot;loginView&quot;).hidden = !!user;
+    $(&quot;dashView&quot;).hidden = !user;
+    if (user &amp;&amp; !started) { started = true; startListeners(); }
+  });
+
+  /* ---------- Real-time listeners ---------- */
+  function startListeners() {
+    db.ref(&quot;sensorData&quot;).limitToLast(50).on(&quot;child_added&quot;, snap =&gt; {
+      const d = snap.val();
+      history.push(d); if (history.length &gt; 50) history.shift();
+      $(&quot;tempValue&quot;).textContent = Number(d.temperature).toFixed(1) + &quot;°C&quot;;
+      $(&quot;humValue&quot;).textContent  = Math.round(d.humidity) + &quot;%&quot;;
+      $(&quot;ldrValue&quot;).textContent  = d.ldr;
+      $(&quot;tempStatus&quot;).textContent = d.temperature &lt; 20 ? &quot;Cool&quot; : d.temperature &gt; 28 ? &quot;Warm&quot; : &quot;Comfortable&quot;;
+      $(&quot;humStatus&quot;).textContent  = d.humidity &lt; 30 ? &quot;Dry&quot; : d.humidity &gt; 60 ? &quot;Humid&quot; : &quot;Comfortable&quot;;
+      $(&quot;ldrStatus&quot;).textContent  = d.ldr &gt; Number($(&quot;threshold&quot;).value) ? &quot;Dark&quot; : &quot;Bright&quot;;
+
+      const tr = document.createElement(&quot;tr&quot;);
+      [new Date(d.timestamp).toLocaleString(), Number(d.temperature).toFixed(1), Math.round(d.humidity), d.ldr,
+       d.bulbState ? &quot;ON&quot; : &quot;OFF&quot;, d.mode].forEach(v =&gt; { const td = document.createElement(&quot;td&quot;); td.textContent = v; tr.appendChild(td); });
+      const body = $(&quot;rows&quot;); body.prepend(tr);
+      while (body.children.length &gt; 50) body.lastChild.remove();
+    });
+
+    db.ref(&quot;appliances/bulbState&quot;).on(&quot;value&quot;, s =&gt; {
+      bulbOn = !!s.val();
+      $(&quot;bulbToggle&quot;).classList.toggle(&quot;on&quot;, bulbOn);
+      $(&quot;bulbToggle&quot;).setAttribute(&quot;aria-checked&quot;, bulbOn);
+      $(&quot;bulbStatus&quot;).textContent = bulbOn ? &quot;ON&quot; : &quot;OFF&quot;;
+    });
+    db.ref(&quot;settings/mode&quot;).on(&quot;value&quot;, s =&gt; { mode = s.val() || &quot;manual&quot;; renderMode(); });
+    db.ref(&quot;settings/ldrThreshold&quot;).on(&quot;value&quot;, s =&gt; {
+      const v = s.val() ?? 2500;
+      $(&quot;threshold&quot;).value = v; $(&quot;thresholdValue&quot;).textContent = v;
+    });
+  }
+
+  /* ---------- Controls ---------- */
+  function toggleBulb() {
+    if (mode === &quot;automatic&quot;) { alert(&quot;Switch to Manual mode to control the bulb.&quot;); return; }
+    db.ref(&quot;appliances/bulbState&quot;).set(!bulbOn);          // uses the state kept by the listener above
+  }
+  $(&quot;bulbToggle&quot;).onclick = toggleBulb;
+  $(&quot;bulbToggle&quot;).onkeydown = e =&gt; { if (e.key === &quot;Enter&quot; || e.key === &quot; &quot;) { e.preventDefault(); toggleBulb(); } };
+
+  const setMode = m =&gt; db.ref(&quot;settings/mode&quot;).set(m);
+  $(&quot;modeManual&quot;).onclick = () =&gt; setMode(&quot;manual&quot;);
+  $(&quot;modeAuto&quot;).onclick   = () =&gt; setMode(&quot;automatic&quot;);
+  function renderMode() {
+    $(&quot;modeManual&quot;).classList.toggle(&quot;active&quot;, mode === &quot;manual&quot;);
+    $(&quot;modeAuto&quot;).classList.toggle(&quot;active&quot;, mode === &quot;automatic&quot;);
+    $(&quot;thresholdBox&quot;).hidden = mode !== &quot;automatic&quot;;
+  }
+
+  // Input validation: always an integer clamped to 0-4095; write only when the slider is released
+  $(&quot;threshold&quot;).oninput  = e =&gt; $(&quot;thresholdValue&quot;).textContent = e.target.value;
+  $(&quot;threshold&quot;).onchange = e =&gt; {
+    const v = Math.min(4095, Math.max(0, parseInt(e.target.value, 10) || 0));
+    db.ref(&quot;settings/ldrThreshold&quot;).set(v);
+  };
+
+  /* ---------- CSV export ---------- */
+  $(&quot;btnCsv&quot;).onclick = () =&gt; {
+    let csv = &quot;Timestamp,Temperature,Humidity,Light,Bulb,Mode\n&quot;;
+    history.forEach(r =&gt; {
+      csv += `${new Date(r.timestamp).toISOString()},${r.temperature},${r.humidity},${r.ldr},${r.bulbState ? &quot;ON&quot; : &quot;OFF&quot;},${r.mode}\n`;
+    });
+    const url = URL.createObjectURL(new Blob([csv], { type: &quot;text/csv&quot; }));
+    const a = document.createElement(&quot;a&quot;);
+    a.href = url; a.download = &quot;sensor-data.csv&quot;; a.click();
+    URL.revokeObjectURL(url);
+  };
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></details><p><a class="back-link" href="code/task4_dashboard.html">Download task4_dashboard.html →</a></p></div><div class="doc-section"><h2>Screenshots and video</h2><div class="media-block"><h3>Screenshots of the login page</h3><div class="media-grid"><figure><img src="assets/media/task4-login.png" alt="Login page: email/password and Google sign-in" onerror="this.closest('figure').remove()"><figcaption>Login page: email/password and Google sign-in</figcaption></figure></div></div><div class="media-block"><h3>Screenshots of the Firebase console</h3><div class="media-grid"><figure><img src="assets/media/task4-firebase-db.png" alt="Realtime Database tree showing sensorData, appliances and settings" onerror="this.closest('figure').remove()"><figcaption>Realtime Database tree showing sensorData, appliances and settings</figcaption></figure><figure><img src="assets/media/task4-firebase-auth.png" alt="Authentication: sign-in providers and users" onerror="this.closest('figure').remove()"><figcaption>Authentication: sign-in providers and users</figcaption></figure><figure><img src="assets/media/task4-firebase-rules.png" alt="Security rules" onerror="this.closest('figure').remove()"><figcaption>Security rules</figcaption></figure></div></div><div class="media-block"><h3>Screenshots of the working dashboard</h3><div class="media-grid"><figure><img src="assets/media/task4-dashboard.png" alt="Dashboard on desktop" onerror="this.closest('figure').remove()"><figcaption>Dashboard on desktop</figcaption></figure><figure><img src="assets/media/task4-dashboard-mobile.png" alt="Dashboard on a phone" onerror="this.closest('figure').remove()"><figcaption>Dashboard on a phone</figcaption></figure></div></div><div class="media-block"><h3>Video of the webpage workflow</h3><div class="media-grid"><figure><video controls preload="metadata" src="assets/media/task4-demo.mp4" onerror="this.closest('figure').remove()"></video><figcaption>Login, live readings, bulb toggle, mode change and CSV export</figcaption></figure></div></div></div><div class="doc-section"><h2>Problems encountered and their solutions</h2><div class="table-scroll"><table><thead><tr><th>Problem</th><th>Cause</th><th>Solution</th></tr></thead><tbody><tr><td>Slow queries while building the schema</td><td>Deeply nested paths</td><td>Flattened the structure to <code>/sensorData</code>, <code>/appliances</code>, <code>/settings</code></td></tr><tr><td>Toggle did not flip the bulb</td><td>The state has to be read before writing the opposite</td><td>Keep the latest value from the real-time listener and write <code>!bulbOn</code></td></tr><tr><td>Dashboard and ESP32 fighting over the state</td><td>Both change <code>bulbState</code> (manual vs automatic)</td><td>Manual toggle is blocked in automatic mode; the ESP32 ignores manual commands in automatic mode</td></tr><tr><td>Google sign-in popup fails</td><td>The site domain is not authorised</td><td>Add the domain under Authentication &rarr; Authorized domains</td></tr><tr><td>Table kept growing</td><td>Every new reading added a row</td><td>Cap the table and in-memory history at 50 readings</td></tr></tbody></table></div></div><div class="doc-section"><h2>Brief reflection on the assignment</h2><div class="callout"><strong>Reflection.</strong> Schema design turned out to be as important as the code. A flat JSON structure and real-time listeners made the dashboard simple, and rules and authentication made it safe enough to connect to a real appliance. I also learned that authentication alone is not enough: the database rules decide what a signed-in user may do.</div></div><div class="doc-section"><h2>Files in the repository</h2><ul><li><code>code/task4_dashboard.html</code>: login + dashboard</li><li><code>code/database.rules.json</code>: security rules</li><li><code>code/task5_smart_monitor.ino</code>: ESP32 firmware that feeds the dashboard</li><li>This write-up: <code>task4.html</code></li></ul></div>
+  <div class="task-nav"><a class="task-link" href="task3.html">← Task 3: IFTTT</a><a class="task-link" href="task5.html">Task 5 →</a></div>
+</main>
+<script src="assets/site.js" defer></script>
+</body>
+</html>
