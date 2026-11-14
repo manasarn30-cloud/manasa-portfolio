@@ -1030,3 +1030,37 @@ html[data-theme="aero"] .modal-grab { background: #0b2a4a; }
 /* keep sideways reveal animations from widening the page on phones */
 html, body { overflow-x: clip; }
 section, main.doc { overflow-x: clip; }
+
+/* =====================================================================
+   FRUTIGER AERO BACKGROUND PHOTO
+   The photo is shown sharp in the middle; a blurred copy of it extends the
+   sky and grass to the sides on wide screens. A light veil keeps text readable.
+   ===================================================================== */
+html[data-theme="aero"] .bg-blobs { background: #2a79d4; }
+html[data-theme="aero"] .bg-blobs::before {
+  content: ''; position: absolute; inset: 0; top: 0; right: 0; left: 0; bottom: 0; width: auto; height: auto;
+  border-radius: 0; box-shadow: none;
+  background: url("bg-aero.jpg") center / cover no-repeat;
+  filter: blur(28px) saturate(1.1) brightness(1.1); transform: scale(1.2);
+}
+html[data-theme="aero"] .bg-blobs::after {
+  content: ''; position: absolute; inset: auto; top: 0; bottom: auto; right: auto; left: 50%;
+  height: 100%; width: auto; aspect-ratio: 401 / 498; transform: translateX(-50%);
+  border-radius: 0; box-shadow: none;
+  background: url("bg-aero.jpg") center / 100% 100% no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
+}
+html[data-theme="aero"] .bg-blob { opacity: .3; }
+html[data-theme="aero"] .bg-pattern {
+  display: block; opacity: 1; background-size: auto; -webkit-mask-image: none; mask-image: none;
+  background-image: linear-gradient(180deg, rgba(232,247,255,.82) 0%, rgba(232,247,255,.62) 40%, rgba(232,247,255,.34) 100%);
+}
+
+/* soft white glow so text that sits directly on the photo stays readable */
+html[data-theme="aero"] .hero-content p, html[data-theme="aero"] .hero-meta, html[data-theme="aero"] .eyebrow,
+html[data-theme="aero"] .section-header p, html[data-theme="aero"] #projects > .container > p, html[data-theme="aero"] .skills-meta,
+html[data-theme="aero"] .contact-links a, html[data-theme="aero"] .contact-email, html[data-theme="aero"] .footer-bottom,
+html[data-theme="aero"] .hero-content h2 {
+  text-shadow: 0 0 10px rgba(255,255,255,.95), 0 0 3px rgba(255,255,255,.95), 0 1px 0 rgba(255,255,255,.8);
+}
