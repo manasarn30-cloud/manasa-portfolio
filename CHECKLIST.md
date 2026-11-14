@@ -55,6 +55,7 @@ Media goes in `assets/media/` (exact file names in `assets/media/README.md`).
 - ✅ Problems and their solutions · ✅ What you learned about cloud-based automation · ✅ Brief reflection
 
 ## Task 4 — Firebase IoT Monitoring Dashboard ([task4.html](task4.html))
+Live dashboard: https://manasa-easports.web.app/
 - ✅ Objective · ✅ Cloud computing · ✅ IaaS, PaaS, SaaS and BaaS · ✅ Cloud platform · ✅ Database
 - ✅ Firebase Realtime Database · ✅ Cloud-based dashboard · ✅ Authentication and login · ✅ Authentication vs Authorization
 - ✅ Firebase project setup · ✅ Firebase Authentication configuration · ✅ Realtime Database structure
