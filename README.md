@@ -10,7 +10,7 @@ A static portfolio (plain HTML/CSS/JS, hosted on GitHub Pages) with a five-task 
 | `task1.html` | ESP32 web server & HTML LED control |
 | `task2.html` | Adafruit IO dashboard & MQTT (relay + 230 V bulb) |
 | `task3.html` | IFTTT + Adafruit IO voice automation |
-| `task4.html` | Firebase IoT monitoring dashboard (auth, database, rules) |
+| `task4.html` | Firebase IoT monitoring dashboard (auth, database, rules). Live: https://manasa-easports.web.app/ |
 | `task5.html` | Firebase logging, automation & CSV export |
 | `iot-works.html` | IoT Works log: debugging time log, entries, open questions |
 | `CHECKLIST.md` | Every assignment checklist item mapped to the page that covers it |
