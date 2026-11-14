@@ -9,7 +9,7 @@
 #define WIFI_SSID      "YOUR_WIFI_SSID"
 #define WIFI_PASSWORD  "YOUR_WIFI_PASSWORD"
 #define API_KEY        "YOUR_FIREBASE_WEB_API_KEY"
-#define DATABASE_URL   "https://YOUR-PROJECT-default-rtdb.firebaseio.com"
+#define DATABASE_URL   "https://manasa-easports-default-rtdb.asia-southeast1.firebasedatabase.app"
 #define DEVICE_EMAIL   "device@example.com"     // a dedicated Firebase Auth user for the ESP32
 #define DEVICE_PASS    "YOUR_DEVICE_PASSWORD"
 
