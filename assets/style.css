@@ -649,3 +649,5 @@ details.code-box pre.code { margin-top:0; border-top-left-radius:0; border-top-r
 .proj-card p { color: var(--text-secondary); margin-bottom: 16px; }
 .proj-card .go { font-family:'JetBrains Mono',monospace; font-size:.8125rem; color: var(--accent); }
 .proj-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+
+.task-hero .back-link { display:block; }
